@@ -1,0 +1,11 @@
+html, body , body #root{
+    height: 100%;
+    width: 100%;
+}
+
+.app-container {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+}
