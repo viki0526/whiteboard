@@ -1,104 +1,88 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import io from 'socket.io-client';
 import '../css/Board.css';
+import Draw from '../functions/Draw';
 
 export default function Board (props) {
-    const canvasRef = useRef(null);
-    const colorRef = useRef(props.color);
+    const canvasRef = useRef();
+    const propsRef = useRef(props);
     const socketRef = useRef();
+    const [isDrawing, setIsDrawing] = useState(false);
 
     useEffect(() => {
-        console.log('rendering');
+        propsRef.current = props;
+    }, [props])
 
+    const initializeCanvas = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         ctx.strokeStyle = props.color;
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = props.lineWidth;
+        ctx.globalAlpha = props.opacity
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
-
-        let isDrawing = false;
-        let [lastX, lastY] = [0, 0];
-
-        const startDrawing = (e) => {
-            isDrawing = true;
-            const X = e.offsetX;
-            const Y = e.offsetY;
-            ctx.beginPath();
-            ctx.moveTo(X, Y);
-            [lastX, lastY] = [X, Y];
-        };
-    
-        const draw = (e) => {
-            if (!isDrawing) return;
-            const X = e.offsetX;
-            const Y = e.offsetY;
-            ctx.strokeStyle = colorRef.current;
-            ctx.lineTo(X, Y);
-            ctx.stroke();
-            // Emit draw event to socket
-            const line = { fromX: lastX, fromY: lastY, X: X, Y: Y, color: ctx.strokeStyle };
-            socketRef.current.emit('draw', line);
-            [lastX, lastY] = [X, Y];
-        };
-        
-        const stopDrawing = (e) => {
-            isDrawing = false;
-            ctx.closePath();
-        };
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        return () => {
-            canvas.removeEventListener('mousedown', startDrawing);
-            canvas.removeEventListener('mousemove', draw);
-            canvas.removeEventListener('mouseup', stopDrawing);
-            canvas.removeEventListener('mouseout', stopDrawing);
-        };
-    }, [])
+        return { canvas, ctx };
+    }
 
     useEffect(() => {
-        colorRef.current = props.color;
-    }, [props.color])
+        const { canvas, ctx } = initializeCanvas();
 
-    useEffect(() => {
-        socketRef.current = io('http://localhost:8080');
-        const canvas = canvasRef.current;
-        const broadcastCtx = canvas.getContext('2d');
+        const drawInstance = new Draw({ ctx, propsRef });
 
-        const draw = (line) => {
-            broadcastCtx.beginPath();
-            broadcastCtx.strokeStyle = line.color;
-            broadcastCtx.moveTo(line.fromX, line.fromY);
-            broadcastCtx.lineTo(line.X, line.Y);
-            broadcastCtx.stroke();
-            broadcastCtx.closePath();
-        }
+        canvas.addEventListener('mousedown', drawInstance.startDrawing);
+        canvas.addEventListener('mousemove', drawInstance.draw);
+        canvas.addEventListener('mouseup', drawInstance.stopDrawing);
+        canvas.addEventListener('mouseout', drawInstance.stopDrawing);
 
-        // Event listeners and logic for the socket connection
-        socketRef.current.on('connect', () => {
-            console.log('Connected to server');
-        });
-    
-        socketRef.current.on('disconnect', () => {
-            console.log('Disconnected from server');
-        });
-
-        socketRef.current.on('draw', (line) => {
-            draw(line);
-        });
-    
         return () => {
-            socketRef.current.disconnect();
+            canvas.removeEventListener('mousedown', drawInstance.startDrawing);
+            canvas.removeEventListener('mousemove', drawInstance.draw);
+            canvas.removeEventListener('mouseup', drawInstance.stopDrawing);
+            canvas.removeEventListener('mouseout', drawInstance.stopDrawing);
         };
     }, []);
 
+    // let isDrawing = false;
+    // let [lastX, lastY] = [0, 0];
+
+    
+
+    // useEffect(() => {
+    //     socketRef.current = io('http://localhost:8080');
+    //     const canvas = canvasRef.current;
+    //     const broadcastCtx = canvas.getContext('2d');
+
+    //     const draw = (line) => {
+    //         broadcastCtx.beginPath();
+    //         broadcastCtx.strokeStyle = line.color;
+    //         broadcastCtx.lineWidth = 150;
+    //         broadcastCtx.moveTo(line.fromX, line.fromY);
+    //         broadcastCtx.lineTo(line.X, line.Y);
+    //         broadcastCtx.stroke();
+    //         broadcastCtx.closePath();
+    //     }
+
+    //     // Event listeners and logic for the socket connection
+    //     socketRef.current.on('connect', () => {
+    //         console.log('Connected to server');
+    //     });
+    
+    //     socketRef.current.on('disconnect', () => {
+    //         console.log('Disconnected from server');
+    //     });
+
+    //     socketRef.current.on('draw', (line) => {
+    //         draw(line);
+    //     });
+    
+    //     return () => {
+    //         socketRef.current.disconnect();
+    //     };
+    // }, []);
+
     return (
         <>
-            <canvas ref={canvasRef} className='board' id='board'></canvas>
+            <canvas ref={canvasRef} className={'board ' + props.mode} id='board'></canvas>
         </>
     );
 }

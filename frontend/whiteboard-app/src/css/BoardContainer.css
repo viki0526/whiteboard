@@ -1,0 +1,139 @@
+.flex {
+    display: flex;
+}
+
+.main-container {
+    height: 100%;
+    width: 100%;
+}
+
+.toolbar {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding: 4px !important;
+    width: fit-content !important;
+    box-shadow: 0px 0px .9310142993927002px 0px rgba(0, 0, 0, .17), 0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, .08), 0px 7px 14px 0px rgba(0, 0, 0, .05);
+    border-radius: 5px;
+    position: relative; 
+    z-index: 2;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.board-container {
+    position: fixed;
+    top: 0;
+    height: 100%;
+}
+
+.board-container .sidebar {
+    position: absolute;
+    top: 136px;
+    left: 100px;
+    box-shadow: 0px 0px .9310142993927002px 0px rgba(0, 0, 0, .17), 0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, .08), 0px 7px 14px 0px rgba(0, 0, 0, .05);
+    border-radius: 5px;
+    padding: 12px;
+    font-size: 13px;
+    text-align: start;
+    z-index: 2;
+}
+
+.toolbar-segment {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.toolbar-segment:hover {
+    background: #f0effd;
+}
+
+.toolbar-segment.selected {
+    background: #e0dfff;
+}
+
+.sidebar .options {
+    display: flex;
+}
+
+.options input,
+.options .color-input {
+    width: 30px;
+    height: 30px;
+    margin: 0 3px;
+}
+
+.toolbar-segment.col {
+    flex: none;
+}
+
+.toolbar-segment svg {
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar .option-title {
+    padding-top: 20px;
+    padding-bottom: 4px;
+    letter-spacing: 0.2px;
+}
+
+.sidebar .option-title:first-child {
+    padding-top: 0;
+}
+
+.sidebar .options :first-child {
+    margin-left: 0
+}
+
+.option-value.option-color {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 0 3px;
+}
+
+.option-value.option-color .inner-box {
+    width: 95%;
+    height: 95%;
+    margin-top: 1px;
+}
+
+.option-color.selected {
+    border: 1px grey solid;
+}
+
+.options .space-box {
+    width: 1px;
+    background-color: black;
+    opacity: 0.3;
+    margin-left: 8px;
+    margin-right: 10px;
+}
+
+.stroke-option {
+    border-radius: 3px;
+    width: 30px;
+    height: 30px;
+    background-color: rgb(242, 242, 247);
+    margin: 0 3px;
+}
+
+.stroke-option.selected {
+    border: 1px solid;
+}
+
+.options .opacity-slider,
+.opacity-slider input {
+    width: 100%;
+}
