@@ -36,7 +36,7 @@ export default class Store {
 
     redraw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
-        console.log('cleared')
+        console.log('cleared');
         Object.keys(this.objects).forEach(key => {
             const Func = this.functions[key];
             Func.drawAll(this.ctx, this.objects[key]);

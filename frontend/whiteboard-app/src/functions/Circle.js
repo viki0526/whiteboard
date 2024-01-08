@@ -1,16 +1,17 @@
-export default class Line {
+export default class Circle {
     constructor({ ctx, props, storeInstance }) {
         this.ctx = ctx;
         this.isDrawing = false;
         this.props = props;
         this.storeInstance = storeInstance;
         this.started = false;
-        [this.currX, this.currY] = [0, 0];
-        [this.initX, this.initY] = [0, 0];
+        this.start = {};
+        this.end = {};
         this.ctx.strokeStyle = this.props.color;
         this.ctx.lineWidth = this.props.strokeWidth;
         this.ctx.globalAlpha = this.props.opacity;
-        this.mode = 'line';
+        this.mode = 'circle';
+        this.started = false;
 
     
         this.startDrawing = this.startDrawing.bind(this);
@@ -19,39 +20,46 @@ export default class Line {
     }
 
     static drawAll(ctx, objects) {
-        
+        objects.forEach(obj => {
+            ctx.beginPath();
+            ctx.ellipse(obj.centerX, obj.centerY, obj.radiusX, obj.radiusY, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.closePath();
+        });
     }
 
     startDrawing (e) {
-        console.log("line start");
+        console.log('circle start');
         this.isDrawing = true;
-        [this.initX, this.initY] = [e.offsetX, e.offsetY];
+        this.start = { x: e.offsetX, y: e.offsetY };
+        this.end = { x: e.offsetX, y: e.offsetY };
     }
 
     draw (e) {
         if (!this.isDrawing) return;
-        console.log("line draw");
+        console.log(this.start, this.end);
         if (this.started) {
-            this.storeInstance.popLast('line');
             this.storeInstance.redraw();
         }
-        [this.currX, this.currY] = [e.offsetX, e.offsetY];
-        this.storeInstance.add({initX: this.initX, initY: this.initY, endX: this.currX, endY: this.currY}, this.mode);
+        const radiusX = Math.abs(this.end.x - this.start.x) / 2;
+        const radiusY = Math.abs(this.end.y - this.start.y) / 2;
+        const centerX = Math.min(this.end.x, this.start.x) + radiusX;
+        const centerY = Math.min(this.end.y, this.start.y) + radiusY;
         this.ctx.beginPath();
-        this.ctx.moveTo(this.initX, this.initY);
-        this.ctx.lineTo(this.currX, this.currY);
+        this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
         this.ctx.stroke();
         this.ctx.closePath();
+        this.end = { x: e.offsetX, y: e.offsetY };
         this.started = true;
     }
 
     stopDrawing (e) {
-        console.log("stop draw");
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.initX, this.initY);
-        this.ctx.lineTo(this.currX, this.currY);
-        this.ctx.stroke();
-        this.ctx.closePath();
+        console.log('circle stop');
+        const finalRadiusX = Math.abs(this.end.x - this.start.x) / 2;
+        const finalRadiusY = Math.abs(this.end.y - this.start.y) / 2;
+        const finalCenterX = Math.min(this.end.x, this.start.x) + finalRadiusX;
+        const finalCenterY = Math.min(this.end.y, this.start.y) + finalRadiusY;
+        this.storeInstance.add({centerX: finalCenterX, centerY: finalCenterY, radiusX: finalRadiusX, radiusY: finalRadiusY}, this.mode);
         this.isDrawing = false;
         this.started = false;
     }

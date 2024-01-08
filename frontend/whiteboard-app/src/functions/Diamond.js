@@ -1,4 +1,4 @@
-export default class Line {
+export default class Diamond {
     constructor({ ctx, props, storeInstance }) {
         this.ctx = ctx;
         this.isDrawing = false;
@@ -10,7 +10,7 @@ export default class Line {
         this.ctx.strokeStyle = this.props.color;
         this.ctx.lineWidth = this.props.strokeWidth;
         this.ctx.globalAlpha = this.props.opacity;
-        this.mode = 'line';
+        this.mode = 'diamond';
 
     
         this.startDrawing = this.startDrawing.bind(this);
@@ -23,20 +23,16 @@ export default class Line {
     }
 
     startDrawing (e) {
-        console.log("line start");
         this.isDrawing = true;
         [this.initX, this.initY] = [e.offsetX, e.offsetY];
     }
 
     draw (e) {
         if (!this.isDrawing) return;
-        console.log("line draw");
         if (this.started) {
-            this.storeInstance.popLast('line');
             this.storeInstance.redraw();
         }
         [this.currX, this.currY] = [e.offsetX, e.offsetY];
-        this.storeInstance.add({initX: this.initX, initY: this.initY, endX: this.currX, endY: this.currY}, this.mode);
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);
@@ -46,7 +42,6 @@ export default class Line {
     }
 
     stopDrawing (e) {
-        console.log("stop draw");
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);
@@ -54,5 +49,6 @@ export default class Line {
         this.ctx.closePath();
         this.isDrawing = false;
         this.started = false;
+        this.storeInstance.add({initX: this.initX, initY: this.initY, endX: this.currX, endY: this.currY}, this.mode);
     }
 }
