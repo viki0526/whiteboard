@@ -15,12 +15,11 @@ export default function BoardContainer () {
     const colors = [{name: 'black', code: '#1e1e1e'}, {name: 'red', code: '#e03131'}, {name: 'green', code: '#2f9e44'}, {name: 'blue', code: '#1971c2'}, {name: 'orange', code: '#f08c00'}]
 
     const toolbarElements = [
-        {id: 0, name: 'select', content: <PointerIcon />},
-        {id: 1, name: 'square', content: <SquareIcon />},
-        {id: 2, name: 'diamond', content: <DiamondIcon />},
-        {id: 3, name: 'circle', content: <EllipseIcon />},
-        {id: 4, name: 'line', content: <LineIcon />},
-        {id: 5, name: 'draw', content: <DrawIcon />},
+        {id: 0, name: 'square', content: <SquareIcon />},
+        {id: 1, name: 'diamond', content: <DiamondIcon />},
+        {id: 2, name: 'circle', content: <EllipseIcon />},
+        {id: 3, name: 'line', content: <LineIcon />},
+        {id: 4, name: 'draw', content: <DrawIcon />},
     ]
 
 

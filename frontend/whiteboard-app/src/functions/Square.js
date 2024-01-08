@@ -19,13 +19,7 @@ export default class Line {
     }
 
     static drawAll(objects) {
-        objects.forEach(obj => {
-            this.ctx.beginPath();
-            this.ctx.moveTo(obj.initX, obj.initY);
-            this.ctx.lineTo(obj.currX, obj.currY);
-            this.ctx.stroke();
-            this.ctx.closePath();
-        })
+        
     }
 
     startDrawing (e) {

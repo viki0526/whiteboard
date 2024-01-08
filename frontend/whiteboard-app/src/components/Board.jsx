@@ -6,7 +6,7 @@ import Circle from '../functions/Circle';
 import Diamond from '../functions/Diamond';
 import Line from '../functions/Line';
 import Square from '../functions/Square';
-import Select from '../functions/Select';
+import Store from '../store/Store';
 
 /**
  * 
@@ -20,8 +20,8 @@ export default function Board (props) {
     const ctxRef = useRef();
     const socketRef = useRef();
     const toolTipFeatures = {
-        select: Select,
         draw: Draw,
+        square: Square,
         circle: Circle,
         diamond: Diamond,
         line: Line,
@@ -40,8 +40,11 @@ export default function Board (props) {
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = ctxRef.current;
+        const width = canvas.width;
+        const height = canvas.height;
         const tooltip = toolTipFeatures[props.mode];
-        const toolTipInstance = new tooltip({ ctx, props });
+        const storeInstance = new Store({ ctx, width, height });
+        const toolTipInstance = new tooltip({ ctx, props, storeInstance });
 
         canvas.addEventListener('mousedown', toolTipInstance.startDrawing);
         canvas.addEventListener('mousemove', toolTipInstance.draw);
