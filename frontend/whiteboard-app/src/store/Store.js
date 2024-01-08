@@ -1,5 +1,6 @@
 /**
  * Stores stack of different drawn objects for redrawing
+ * @param ctx, width, height
  */
 import Draw from '../functions/Draw';
 import Circle from '../functions/Circle';
@@ -33,16 +34,12 @@ export default class Store {
         this.objects[mode].push(object);
     }
 
-    popLast(mode) {
-        this.objects[mode].pop();
-    }
-
     redraw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
+        console.log('cleared')
         Object.keys(this.objects).forEach(key => {
             const Func = this.functions[key];
-            console.log(Func);
-            Func.drawAll(this.objects[key]);
+            Func.drawAll(this.ctx, this.objects[key]);
         })
     }
 }

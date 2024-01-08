@@ -18,31 +18,27 @@ export default class Line {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
-    static drawAll(objects) {
+    static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            this.ctx.beginPath();
-            this.ctx.moveTo(obj.initX, obj.initY);
-            this.ctx.lineTo(obj.currX, obj.currY);
-            this.ctx.stroke();
-            this.ctx.closePath();
-        })
+            ctx.beginPath();
+            ctx.moveTo(obj.initX, obj.initY);
+            ctx.lineTo(obj.endX, obj.endY);
+            ctx.stroke();
+            ctx.closePath();
+        });
     }
 
     startDrawing (e) {
-        console.log("line start");
         this.isDrawing = true;
         [this.initX, this.initY] = [e.offsetX, e.offsetY];
     }
 
     draw (e) {
         if (!this.isDrawing) return;
-        console.log("line draw");
         if (this.started) {
-            this.storeInstance.popLast('line');
             this.storeInstance.redraw();
         }
         [this.currX, this.currY] = [e.offsetX, e.offsetY];
-        this.storeInstance.add({initX: this.initX, initY: this.initY, endX: this.currX, endY: this.currY}, this.mode);
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);
@@ -52,13 +48,12 @@ export default class Line {
     }
 
     stopDrawing (e) {
-        console.log("stop draw");
-        this.ctx.clearRect(0, 0, 1230, 882);
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);
         this.ctx.stroke();
         this.ctx.closePath();
+        this.storeInstance.add({initX: this.initX, initY: this.initY, endX: this.currX, endY: this.currY}, this.mode);
         this.isDrawing = false;
         this.started = false;
     }

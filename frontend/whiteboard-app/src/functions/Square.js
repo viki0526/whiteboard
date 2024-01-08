@@ -10,7 +10,7 @@ export default class Line {
         this.ctx.strokeStyle = this.props.color;
         this.ctx.lineWidth = this.props.strokeWidth;
         this.ctx.globalAlpha = this.props.opacity;
-        this.mode = 'line';
+        this.mode = 'square';
 
     
         this.startDrawing = this.startDrawing.bind(this);
@@ -18,21 +18,21 @@ export default class Line {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
-    static drawAll(objects) {
+    static drawAll(ctx, objects) {
         
     }
 
     startDrawing (e) {
-        console.log("line start");
+        console.log("square start");
         this.isDrawing = true;
         [this.initX, this.initY] = [e.offsetX, e.offsetY];
     }
 
     draw (e) {
         if (!this.isDrawing) return;
-        console.log("line draw");
+        console.log("square draw");
         if (this.started) {
-            this.storeInstance.popLast('line');
+            this.storeInstance.popLast(this.mode);
             this.storeInstance.redraw();
         }
         [this.currX, this.currY] = [e.offsetX, e.offsetY];
@@ -46,8 +46,7 @@ export default class Line {
     }
 
     stopDrawing (e) {
-        console.log("stop draw");
-        this.ctx.clearRect(0, 0, 1230, 882);
+        console.log("square draw");
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);

@@ -18,7 +18,7 @@ export default class Line {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
-    static drawAll(objects) {
+    static drawAll(ctx, objects) {
         
     }
 
@@ -47,7 +47,6 @@ export default class Line {
 
     stopDrawing (e) {
         console.log("stop draw");
-        this.ctx.clearRect(0, 0, 1230, 882);
         this.ctx.beginPath();
         this.ctx.moveTo(this.initX, this.initY);
         this.ctx.lineTo(this.currX, this.currY);

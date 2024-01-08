@@ -18,6 +18,7 @@ import Store from '../store/Store';
 export default function Board (props) {
     const canvasRef = useRef();
     const ctxRef = useRef();
+    const storeRef = useRef();
     const socketRef = useRef();
     const toolTipFeatures = {
         draw: Draw,
@@ -35,15 +36,17 @@ export default function Board (props) {
         ctxRef.current.globalAlpha = props.opacity
         canvasRef.current.width = canvasRef.current.offsetWidth;
         canvasRef.current.height = canvasRef.current.offsetHeight;
+        const ctx = ctxRef.current;
+        const width = canvasRef.current.width;
+        const height = canvasRef.current.height;
+        storeRef.current = new Store({ ctx, width, height });
     }, [])
 
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = ctxRef.current;
-        const width = canvas.width;
-        const height = canvas.height;
         const tooltip = toolTipFeatures[props.mode];
-        const storeInstance = new Store({ ctx, width, height });
+        const storeInstance = storeRef.current;
         const toolTipInstance = new tooltip({ ctx, props, storeInstance });
 
         canvas.addEventListener('mousedown', toolTipInstance.startDrawing);
