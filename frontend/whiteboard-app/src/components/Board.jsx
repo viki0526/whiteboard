@@ -2,50 +2,62 @@ import React, {useRef, useEffect, useState} from 'react';
 import io from 'socket.io-client';
 import '../css/Board.css';
 import Draw from '../functions/Draw';
+import Circle from '../functions/Circle';
+import Diamond from '../functions/Diamond';
+import Line from '../functions/Line';
+import Square from '../functions/Square';
+import Select from '../functions/Select';
 
+/**
+ * 
+ * @param {*} props 
+ * @returns styled blank canvas element
+ * 
+ * Wrapper class for drawing canvas. Routes to appropriate canvas function
+ */
 export default function Board (props) {
     const canvasRef = useRef();
-    const propsRef = useRef(props);
+    const ctxRef = useRef();
     const socketRef = useRef();
-    const [isDrawing, setIsDrawing] = useState(false);
+    const toolTipFeatures = {
+        select: Select,
+        draw: Draw,
+        circle: Circle,
+        diamond: Diamond,
+        line: Line,
+        square: Square,
+    } 
 
     useEffect(() => {
-        propsRef.current = props;
-    }, [props])
+        ctxRef.current = canvasRef.current.getContext("2d");
+        ctxRef.current.strokeStyle = props.color;
+        ctxRef.current.lineWidth = props.lineWidth;
+        ctxRef.current.globalAlpha = props.opacity
+        canvasRef.current.width = canvasRef.current.offsetWidth;
+        canvasRef.current.height = canvasRef.current.offsetHeight;
+    }, [])
 
-    const initializeCanvas = () => {
+    useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        ctx.strokeStyle = props.color;
-        ctx.lineWidth = props.lineWidth;
-        ctx.globalAlpha = props.opacity
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        return { canvas, ctx };
-    }
+        const ctx = ctxRef.current;
+        const tooltip = toolTipFeatures[props.mode];
+        const toolTipInstance = new tooltip({ ctx, props });
 
-    useEffect(() => {
-        const { canvas, ctx } = initializeCanvas();
-
-        const drawInstance = new Draw({ ctx, propsRef });
-
-        canvas.addEventListener('mousedown', drawInstance.startDrawing);
-        canvas.addEventListener('mousemove', drawInstance.draw);
-        canvas.addEventListener('mouseup', drawInstance.stopDrawing);
-        canvas.addEventListener('mouseout', drawInstance.stopDrawing);
+        canvas.addEventListener('mousedown', toolTipInstance.startDrawing);
+        canvas.addEventListener('mousemove', toolTipInstance.draw);
+        canvas.addEventListener('mouseup', toolTipInstance.stopDrawing);
+        canvas.addEventListener('mouseout', toolTipInstance.stopDrawing);
 
         return () => {
-            canvas.removeEventListener('mousedown', drawInstance.startDrawing);
-            canvas.removeEventListener('mousemove', drawInstance.draw);
-            canvas.removeEventListener('mouseup', drawInstance.stopDrawing);
-            canvas.removeEventListener('mouseout', drawInstance.stopDrawing);
+            canvas.removeEventListener('mousedown', toolTipInstance.startDrawing);
+            canvas.removeEventListener('mousemove', toolTipInstance.draw);
+            canvas.removeEventListener('mouseup', toolTipInstance.stopDrawing);
+            canvas.removeEventListener('mouseout', toolTipInstance.stopDrawing);
         };
-    }, []);
+    }, [props]);
 
     // let isDrawing = false;
     // let [lastX, lastY] = [0, 0];
-
-    
 
     // useEffect(() => {
     //     socketRef.current = io('http://localhost:8080');

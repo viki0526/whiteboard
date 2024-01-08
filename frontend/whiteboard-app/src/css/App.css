@@ -8,4 +8,5 @@ html, body , body #root{
     width: 100%;
     text-align: center;
     overflow: hidden;
+    max-height: calc(100vh - 56px);
 }

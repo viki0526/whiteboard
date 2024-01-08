@@ -4,13 +4,12 @@ import Board from './Board'
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
-import {ReactComponent as DragHandIcon} from '../assets/DragHandIcon.svg';
 import {ReactComponent as PointerIcon} from '../assets/PointerIcon.svg';
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
 import {ReactComponent as EllipseIcon} from '../assets/EllipseIcon.svg';
-import {ReactComponent as ArrowIcon} from '../assets/ArrowIcon.svg';
 import {ReactComponent as LineIcon} from '../assets/LineIcon.svg';
+import {ReactComponent as DrawIcon} from '../assets/DrawIcon.svg';
 
 export default function BoardContainer () {
     const colors = [{name: 'black', code: '#1e1e1e'}, {name: 'red', code: '#e03131'}, {name: 'green', code: '#2f9e44'}, {name: 'blue', code: '#1971c2'}, {name: 'orange', code: '#f08c00'}]
@@ -20,8 +19,8 @@ export default function BoardContainer () {
         {id: 1, name: 'square', content: <SquareIcon />},
         {id: 2, name: 'diamond', content: <DiamondIcon />},
         {id: 3, name: 'circle', content: <EllipseIcon />},
-        {id: 4, name: 'arrow', content: <ArrowIcon />},
-        {id: 5, name: 'draw', content: <LineIcon />},
+        {id: 4, name: 'line', content: <LineIcon />},
+        {id: 5, name: 'draw', content: <DrawIcon />},
     ]
 
 
@@ -55,15 +54,6 @@ export default function BoardContainer () {
                 div.classList.remove('selected');
             }
         })
-    }
-
-    const handleToolbarSelect = (e) => {
-        console.log('click', e.target)
-        const toolbarDivs = document.querySelectorAll('.toolbar-segment');
-        toolbarDivs.forEach((div) => {
-            div.classList.remove('selected');
-        })
-        e.target.classList.add('selected');
     }
 
     return (
