@@ -4,7 +4,6 @@ import Board from './Board'
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
-import {ReactComponent as PointerIcon} from '../assets/PointerIcon.svg';
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
 import {ReactComponent as EllipseIcon} from '../assets/EllipseIcon.svg';
@@ -21,15 +20,32 @@ export default function BoardContainer () {
         {id: 3, name: 'line', content: <LineIcon />},
         {id: 4, name: 'draw', content: <DrawIcon />},
     ]
-
-
     const [selectedColor, setSelectedColor] = useState('#1e1e1e');
     const [strokeWidth, setStrokeWidth] = useState(1.2);
-    const [opacity, setOpacity] = useState(1);
+    const [opacity, setOpacity] = useState(1); // Not used currently
     const [selectedCol, setSelectedCol] = useState(0);
 
-    const handleColorSelect = (name, code) => {
+    useEffect(() => {
+        const colorObj = JSON.parse(localStorage.getItem('selectedColor'));
+        const strokeWidthObj = JSON.parse(localStorage.getItem('strokeWidth'));
+        const mode = JSON.parse(localStorage.getItem('selectedCol'));
+        loadFromLocalStorage(colorObj, handleColorSelect);
+        loadFromLocalStorage(strokeWidthObj, handleStrokeWidthSelect);
+        loadFromLocalStorage(mode, setSelectedCol);
+    }, [])
+
+    const loadFromLocalStorage = (val, handleSelect) => {
+        if (val) {
+            handleSelect(val);
+        }
+    }
+
+    const handleColorSelect = (obj) => {
+        const name = obj.name;
+        const code = obj.code;
         setSelectedColor(code);
+        localStorage.setItem('selectedColor', JSON.stringify(obj));
+        console.log('updated localStorage color:', JSON.parse(localStorage.getItem('selectedColor')));
         const colorDivs = document.querySelectorAll('.option-color');
         colorDivs.forEach((div) => {
             if (div.classList.contains(name)) {
@@ -42,9 +58,11 @@ export default function BoardContainer () {
         selectedInput.value = code;
     }
 
-    const handleStrokeWidthSelect = (className, strokeWidth) => {
+    const handleStrokeWidthSelect = (obj) => {
+        const className = obj.className;
+        const strokeWidth = obj.strokeWidth;
         setStrokeWidth(strokeWidth);
-
+        localStorage.setItem('strokeWidth', JSON.stringify(obj));
         const strokeDivs = document.querySelectorAll('.stroke-option');
         strokeDivs.forEach((div) => {
             if (div.classList.contains(className)) {
@@ -55,13 +73,18 @@ export default function BoardContainer () {
         })
     }
 
+    const handleModeSelect = (id) => {
+        setSelectedCol(id);
+        localStorage.setItem('selectedCol', JSON.stringify(id));
+    }
+
     return (
         <>
             <div className='main-container'>
                 <Container className='toolbar'>
                     {
                         toolbarElements.map((elem) => (
-                            <Col key={elem.id} className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => setSelectedCol(elem.id)}> 
+                            <Col key={elem.id} className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => handleModeSelect(elem.id)}> 
                                 {elem.content}
                             </Col>
                         ))
@@ -76,13 +99,13 @@ export default function BoardContainer () {
                         <div className='options'>
                             {
                                 colors.map((color) => (
-                                    <div className={`option-value option-color ${color.name}`} onClick={() => {handleColorSelect(color.name, color.code)}}>
-                                        <div style={{background: color.code}} className='inner-box' />
+                                    <div className={`option-value option-color ${color.name}`} onClick={() => {handleColorSelect({name: color.name, code: color.code})}}>
+                                        <div style={{background: color.code}} className='inner-box' /> 
                                     </div>
                                 ))
                             }
                             <div className='space-box' />
-                            <input type='color' id='color-input' onChange={(e) => {handleColorSelect('custom', e.target.value)}} />
+                            <input type='color' id='color-input' onChange={(e) => {handleColorSelect({name: 'custom', code: e.target.value})}} />
                         </div>
 
                         {/* <div className='option-title'>
@@ -98,17 +121,17 @@ export default function BoardContainer () {
                             Stroke width
                         </div>
                         <div className='options'>
-                            <div className='stroke-option thin selected' onClick={() => handleStrokeWidthSelect('thin', 1.2)}>
+                            <div className='stroke-option thin selected' onClick={() => handleStrokeWidthSelect({className: 'thin', strokeWidth: 1.2})}>
                                 <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4.167 10h11.666" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>
                             </div>
-                            <div className='stroke-option medium' onClick={() => handleStrokeWidthSelect('medium', 2.5)}>
+                            <div className='stroke-option medium' onClick={() => handleStrokeWidthSelect({className: 'medium', strokeWidth: 2.5})}>
                                 <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4.167 10h11.666" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>
                             </div>
-                            <div className='stroke-option thick' onClick={() => handleStrokeWidthSelect('thick', 5)}>
+                            <div className='stroke-option thick' onClick={() => handleStrokeWidthSelect({className: 'thick', strokeWidth: 5})}>
                                 <svg aria-hidden="true" focusable="false" role="img" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4.167 10h11.666" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>

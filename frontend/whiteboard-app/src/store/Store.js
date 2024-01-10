@@ -28,6 +28,7 @@ export default class Store {
             line: Line,
             draw: Draw,
         }
+        this.loadFromLocalStorage(); 
         this.socket = io('http://localhost:8080', {
             timeout: 20000,
         });
@@ -48,9 +49,22 @@ export default class Store {
         this.add = this.add.bind(this);
     }
 
+    saveToLocalStorage() {
+        localStorage.setItem('objects', JSON.stringify(this.objects));
+    }
+
+    loadFromLocalStorage() {
+        const storedObjects = localStorage.getItem('objects');
+        if (storedObjects) {
+            this.objects = JSON.parse(storedObjects);
+            this.redraw();
+        }
+    }
+
     add(object, props, mode) {
         this.objects[mode].push({object: object, props: props});
         this.socket.emit('sync', {object: object, mode: mode, props: props});
+        this.saveToLocalStorage();
     }
 
     redraw() {
