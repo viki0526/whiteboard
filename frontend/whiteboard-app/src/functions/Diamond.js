@@ -16,10 +16,12 @@ export default class Diamond {
         this.startDrawing = this.startDrawing.bind(this);
         this.draw = this.draw.bind(this);
         this.stopDrawing = this.stopDrawing.bind(this);
-        this.drawShape = this.drawShape.bind(this);
     }
 
-    static syncDraw(ctx, obj) {
+    static syncDraw(ctx, obj, props) {
+        ctx.strokeStyle = props.color;
+        ctx.lineWidth = props.strokeWidth;
+        ctx.globalAlpha = props.opacity;
         ctx.beginPath();
         ctx.moveTo(obj.centerX, obj.centerY - obj.height / 2); // Top
         ctx.lineTo(obj.centerX + obj.width / 2, obj.centerY); // Right
@@ -27,24 +29,29 @@ export default class Diamond {
         ctx.lineTo(obj.centerX - obj.width / 2, obj.centerY); // Left
         ctx.closePath();
         ctx.stroke();
-        ctx.closePath();
     }
 
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            Diamond.syncDraw(ctx, obj);
+            Diamond.syncDraw(ctx, obj.object, obj.props);
         });
     }
 
+    setContext() {
+        this.ctx.strokeStyle = this.props.color;
+        this.ctx.lineWidth = this.props.strokeWidth;
+        this.ctx.globalAlpha = this.props.opacity;
+    }
+
     drawShape(obj) {
+        this.setContext();
         this.ctx.beginPath();
-        this.ctx.moveTo(obj.centerX, obj.centerY - obj.height / 2); // Top
-        this.ctx.lineTo(obj.centerX + obj.width / 2, obj.centerY); // Right
-        this.ctx.lineTo(obj.centerX, obj.centerY + obj.height / 2); // Bottom
-        this.ctx.lineTo(obj.centerX - obj.width / 2, obj.centerY); // Left
+        this.ctx.moveTo(obj.centerX, obj.centerY - obj.height / 2); 
+        this.ctx.lineTo(obj.centerX + obj.width / 2, obj.centerY); 
+        this.ctx.lineTo(obj.centerX, obj.centerY + obj.height / 2); 
+        this.ctx.lineTo(obj.centerX - obj.width / 2, obj.centerY);
         this.ctx.closePath();
         this.ctx.stroke();
-        this.ctx.closePath();
     }
 
     startDrawing (e) {
@@ -83,6 +90,7 @@ export default class Diamond {
                 width: width,
                 height: height,
             },
+            this.props,
             this.mode
         );
     }

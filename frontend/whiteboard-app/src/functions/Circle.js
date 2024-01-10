@@ -19,7 +19,10 @@ export default class Circle {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
-    static syncDraw(ctx, obj) {
+    static syncDraw(ctx, obj, props) {
+        ctx.strokeStyle = props.color;
+        ctx.lineWidth = props.strokeWidth;
+        ctx.globalAlpha = props.opacity;
         ctx.beginPath();
         ctx.ellipse(obj.centerX, obj.centerY, obj.radiusX, obj.radiusY, 0, 0, 2 * Math.PI);
         ctx.stroke();
@@ -28,12 +31,25 @@ export default class Circle {
 
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            Circle.syncDraw(ctx, obj);
+            Circle.syncDraw(ctx, obj.object, obj.props);
         });
     }
 
+    setContext() {
+        this.ctx.strokeStyle = this.props.color;
+        this.ctx.lineWidth = this.props.strokeWidth;
+        this.ctx.globalAlpha = this.props.opacity;
+    }
+
+    drawShape(obj) {
+        this.setContext();
+        this.ctx.beginPath();
+        this.ctx.ellipse(obj.centerX, obj.centerY, obj.radiusX, obj.radiusY, 0, 0, 2 * Math.PI);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
     startDrawing (e) {
-        console.log('circle start');
         this.isDrawing = true;
         this.start = { x: e.offsetX, y: e.offsetY };
         this.end = { x: e.offsetX, y: e.offsetY };
@@ -41,7 +57,6 @@ export default class Circle {
 
     draw (e) {
         if (!this.isDrawing) return;
-        console.log(this.start, this.end);
         if (this.started) {
             this.storeInstance.redraw();
         }
@@ -49,21 +64,20 @@ export default class Circle {
         const radiusY = Math.abs(this.end.y - this.start.y) / 2;
         const centerX = Math.min(this.end.x, this.start.x) + radiusX;
         const centerY = Math.min(this.end.y, this.start.y) + radiusY;
-        this.ctx.beginPath();
-        this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
-        this.ctx.stroke();
-        this.ctx.closePath();
+        this.drawShape({centerX: centerX, centerY: centerY, radiusX: radiusX, radiusY: radiusY});
         this.end = { x: e.offsetX, y: e.offsetY };
         this.started = true;
     }
 
     stopDrawing (e) {
-        console.log('circle stop');
         const finalRadiusX = Math.abs(this.end.x - this.start.x) / 2;
         const finalRadiusY = Math.abs(this.end.y - this.start.y) / 2;
         const finalCenterX = Math.min(this.end.x, this.start.x) + finalRadiusX;
         const finalCenterY = Math.min(this.end.y, this.start.y) + finalRadiusY;
-        this.storeInstance.add({centerX: finalCenterX, centerY: finalCenterY, radiusX: finalRadiusX, radiusY: finalRadiusY}, this.mode);
+        this.storeInstance.add(
+            {centerX: finalCenterX, centerY: finalCenterY, radiusX: finalRadiusX, radiusY: finalRadiusY}, 
+            this.props,
+            this.mode);
         this.isDrawing = false;
         this.started = false;
     }

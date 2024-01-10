@@ -15,7 +15,10 @@ export default class Draw {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
-    static syncDraw(ctx, obj) {
+    static syncDraw(ctx, obj, props) {
+        ctx.strokeStyle = props.color;
+        ctx.lineWidth = props.strokeWidth;
+        ctx.globalAlpha = props.opacity;
         obj.forEach(line => {
             ctx.beginPath();
             ctx.moveTo(line.initX, line.initY);
@@ -27,8 +30,20 @@ export default class Draw {
 
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            Draw.syncDraw(ctx, obj);
+            Draw.syncDraw(ctx, obj.object, obj.props);
         });
+    }
+
+    setContext() {
+        this.ctx.strokeStyle = this.props.color;
+        this.ctx.lineWidth = this.props.strokeWidth;
+        this.ctx.globalAlpha = this.props.opacity;
+    }
+
+    drawShape(obj) {
+        this.setContext();
+        this.ctx.lineTo(obj.X, obj.Y);
+        this.ctx.stroke();
     }
 
     startDrawing (e) {
@@ -44,15 +59,14 @@ export default class Draw {
         if (!this.isDrawing) return;
         const X = e.offsetX;
         const Y = e.offsetY;
-        this.ctx.lineTo(X, Y);
+        this.drawShape({X: X, Y: Y});
         this.pathStore.push({initX: this.lastX, initY: this.lastY, endX: X, endY: Y});
-        this.ctx.stroke();
         [this.lastX, this.lastY] = [X, Y];
     }
 
     stopDrawing (e) {
         this.isDrawing = false;
         this.ctx.closePath();
-        this.storeInstance.add(this.pathStore, 'draw');
+        this.storeInstance.add(this.pathStore, this.props, 'draw');
     }
 }
