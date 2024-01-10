@@ -19,12 +19,16 @@ export default class Circle {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
+    static syncDraw(ctx, obj) {
+        ctx.beginPath();
+        ctx.ellipse(obj.centerX, obj.centerY, obj.radiusX, obj.radiusY, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            ctx.beginPath();
-            ctx.ellipse(obj.centerX, obj.centerY, obj.radiusX, obj.radiusY, 0, 0, 2 * Math.PI);
-            ctx.stroke();
-            ctx.closePath();
+            Circle.syncDraw(ctx, obj);
         });
     }
 

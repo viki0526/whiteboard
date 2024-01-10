@@ -15,15 +15,19 @@ export default class Draw {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
+    static syncDraw(ctx, obj) {
+        obj.forEach(line => {
+            ctx.beginPath();
+            ctx.moveTo(line.initX, line.initY);
+            ctx.lineTo(line.endX, line.endY);
+            ctx.stroke();
+            ctx.closePath();
+        })
+    }
+
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            obj.forEach(line => {
-                ctx.beginPath();
-                ctx.moveTo(line.initX, line.initY);
-                ctx.lineTo(line.endX, line.endY);
-                ctx.stroke();
-                ctx.closePath();
-            })
+            Draw.syncDraw(ctx, obj);
         });
     }
 

@@ -9,7 +9,7 @@ export default function NavComponent() {
     return (
         <Navbar expand="lg" className="bg-body-tertiary">
             <Container>
-            <Navbar.Brand href="#home">Whiteboard App</Navbar.Brand>
+            <Navbar.Brand href="#home">Collaborative Whiteboard App</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="me-auto">

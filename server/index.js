@@ -8,7 +8,7 @@ const server = createServer(app);
 const io = new Server(server, {
     cors: {
         origin: '*',
-        methods: ['GET', 'POST'], // Adjust based on your requirements
+        methods: ['GET', 'POST'],
     },
 });
 
@@ -21,9 +21,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
-    socket.on('draw', (line) => {
-        // Broadcast drawing data to all clients except the sender
-        socket.broadcast.emit('draw', line);
+    socket.on('sync', (message) => {
+        socket.broadcast.emit('sync', message);
     });
 });
 

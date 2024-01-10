@@ -18,13 +18,17 @@ export default class Line {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
+    static syncDraw(ctx, obj) {
+        ctx.beginPath();
+        ctx.moveTo(obj.initX, obj.initY);
+        ctx.lineTo(obj.endX, obj.endY);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            ctx.beginPath();
-            ctx.moveTo(obj.initX, obj.initY);
-            ctx.lineTo(obj.endX, obj.endY);
-            ctx.stroke();
-            ctx.closePath();
+            Line.syncDraw(ctx, obj);
         });
     }
 

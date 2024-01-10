@@ -18,12 +18,16 @@ export default class Square {
         this.stopDrawing = this.stopDrawing.bind(this);
     }
 
+    static syncDraw(ctx, obj) {
+        ctx.beginPath();
+        ctx.rect(obj.left, obj.top, obj.width, obj.height);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
     static drawAll(ctx, objects) {
         objects.forEach(obj => {
-            ctx.beginPath();
-            ctx.rect(obj.left, obj.top, obj.width, obj.height);
-            ctx.stroke();
-            ctx.closePath();
+            Square.syncDraw(ctx, obj);
         });
     }
 

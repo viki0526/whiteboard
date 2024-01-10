@@ -62,9 +62,6 @@ export default function Board (props) {
         };
     }, [props]);
 
-    // let isDrawing = false;
-    // let [lastX, lastY] = [0, 0];
-
     // useEffect(() => {
     //     socketRef.current = io('http://localhost:8080');
     //     const canvas = canvasRef.current;
