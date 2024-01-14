@@ -1,5 +1,4 @@
-import React, {useRef, useEffect, useState} from 'react';
-import io from 'socket.io-client';
+import React, {useRef, useEffect, useState, useImperativeHandle, forwardRef} from 'react';
 import '../css/Board.css';
 import Draw from '../functions/Draw';
 import Circle from '../functions/Circle';
@@ -15,19 +14,19 @@ import Store from '../store/Store';
  * 
  * Wrapper class for drawing canvas. Routes to appropriate canvas function
  */
-export default function Board (props) {
+const Board = React.forwardRef((props, ref) => {
     const canvasRef = useRef();
     const ctxRef = useRef();
     const storeRef = useRef();
-    const socketRef = useRef();
-    const toolTipFeatures = {
+    const clearCanvasRef = useRef();
+    const shapes = {
         draw: Draw,
         square: Square,
         circle: Circle,
         diamond: Diamond,
         line: Line,
         square: Square,
-    } 
+    }
 
     useEffect(() => {
         ctxRef.current = canvasRef.current.getContext("2d");
@@ -40,64 +39,46 @@ export default function Board (props) {
         const width = canvasRef.current.width;
         const height = canvasRef.current.height;
         storeRef.current = new Store({ ctx, width, height });
+        clearCanvasRef.current = clearCanvas;
     }, [])
 
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = ctxRef.current;
-        const tooltip = toolTipFeatures[props.mode];
+        const shapeClass = shapes[props.mode];
         const storeInstance = storeRef.current;
-        const toolTipInstance = new tooltip({ ctx, props, storeInstance });
+        const shapeInstance = new shapeClass({ ctx, props, storeInstance });
 
-        canvas.addEventListener('mousedown', toolTipInstance.startDrawing);
-        canvas.addEventListener('mousemove', toolTipInstance.draw);
-        canvas.addEventListener('mouseup', toolTipInstance.stopDrawing);
-        canvas.addEventListener('mouseout', toolTipInstance.stopDrawing);
+        canvas.addEventListener('mousedown', shapeInstance.startDrawing);
+        canvas.addEventListener('mousemove', shapeInstance.draw);
+        canvas.addEventListener('mouseup', shapeInstance.stopDrawing);
+        canvas.addEventListener('mouseout', shapeInstance.stopDrawing);
 
         return () => {
-            canvas.removeEventListener('mousedown', toolTipInstance.startDrawing);
-            canvas.removeEventListener('mousemove', toolTipInstance.draw);
-            canvas.removeEventListener('mouseup', toolTipInstance.stopDrawing);
-            canvas.removeEventListener('mouseout', toolTipInstance.stopDrawing);
+            canvas.removeEventListener('mousedown', shapeInstance.startDrawing);
+            canvas.removeEventListener('mousemove', shapeInstance.draw);
+            canvas.removeEventListener('mouseup', shapeInstance.stopDrawing);
+            canvas.removeEventListener('mouseout', shapeInstance.stopDrawing);
         };
     }, [props]);
 
-    // useEffect(() => {
-    //     socketRef.current = io('http://localhost:8080');
-    //     const canvas = canvasRef.current;
-    //     const broadcastCtx = canvas.getContext('2d');
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        const ctx = ctxRef.current;
+        const storeInstance = storeRef.current;
+        storeInstance.clear();
+        storeInstance.redraw();
+    }
 
-    //     const draw = (line) => {
-    //         broadcastCtx.beginPath();
-    //         broadcastCtx.strokeStyle = line.color;
-    //         broadcastCtx.lineWidth = 150;
-    //         broadcastCtx.moveTo(line.fromX, line.fromY);
-    //         broadcastCtx.lineTo(line.X, line.Y);
-    //         broadcastCtx.stroke();
-    //         broadcastCtx.closePath();
-    //     }
-
-    //     // Event listeners and logic for the socket connection
-    //     socketRef.current.on('connect', () => {
-    //         console.log('Connected to server');
-    //     });
-    
-    //     socketRef.current.on('disconnect', () => {
-    //         console.log('Disconnected from server');
-    //     });
-
-    //     socketRef.current.on('draw', (line) => {
-    //         draw(line);
-    //     });
-    
-    //     return () => {
-    //         socketRef.current.disconnect();
-    //     };
-    // }, []);
+    useImperativeHandle(ref, () => ({
+        clearCanvas,
+    }));
 
     return (
         <>
             <canvas ref={canvasRef} className={'board ' + props.mode} id='board'></canvas>
         </>
     );
-}
+});
+
+export default Board;

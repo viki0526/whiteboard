@@ -1,31 +1,36 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import '../css/BoardContainer.css';
 import Board from './Board'
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
+import 'react-tippy/dist/tippy.css'
+import { Tooltip } from 'react-tippy';
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
 import {ReactComponent as EllipseIcon} from '../assets/EllipseIcon.svg';
 import {ReactComponent as LineIcon} from '../assets/LineIcon.svg';
 import {ReactComponent as DrawIcon} from '../assets/DrawIcon.svg';
+import {ReactComponent as ClearIcon} from '../assets/ClearIcon.svg';
 
 export default function BoardContainer () {
     const colors = [{name: 'black', code: '#1e1e1e'}, {name: 'red', code: '#e03131'}, {name: 'green', code: '#2f9e44'}, {name: 'blue', code: '#1971c2'}, {name: 'orange', code: '#f08c00'}]
 
     const toolbarElements = [
-        {id: 0, name: 'square', content: <SquareIcon />},
-        {id: 1, name: 'diamond', content: <DiamondIcon />},
-        {id: 2, name: 'circle', content: <EllipseIcon />},
-        {id: 3, name: 'line', content: <LineIcon />},
-        {id: 4, name: 'draw', content: <DrawIcon />},
+        {id: 0, name: 'square', content: <SquareIcon />, tooltip: 'Rectangle'},
+        {id: 1, name: 'diamond', content: <DiamondIcon />, tooltip: 'Diamond'},
+        {id: 2, name: 'circle', content: <EllipseIcon />, tooltip: 'Circle'},
+        {id: 3, name: 'line', content: <LineIcon />, tooltip: 'Line'},
+        {id: 4, name: 'draw', content: <DrawIcon />, tooltip: 'Draw'},
     ]
     const [selectedColor, setSelectedColor] = useState('#1e1e1e');
     const [strokeWidth, setStrokeWidth] = useState(1.2);
     const [opacity, setOpacity] = useState(1); // Not used currently
     const [selectedCol, setSelectedCol] = useState(0);
 
-    useEffect(() => {
+    const boardRef = useRef();
+
+    useEffect(() => {        
         const colorObj = JSON.parse(localStorage.getItem('selectedColor'));
         const strokeWidthObj = JSON.parse(localStorage.getItem('strokeWidth'));
         const mode = JSON.parse(localStorage.getItem('selectedCol'));
@@ -45,7 +50,6 @@ export default function BoardContainer () {
         const code = obj.code;
         setSelectedColor(code);
         localStorage.setItem('selectedColor', JSON.stringify(obj));
-        console.log('updated localStorage color:', JSON.parse(localStorage.getItem('selectedColor')));
         const colorDivs = document.querySelectorAll('.option-color');
         colorDivs.forEach((div) => {
             if (div.classList.contains(name)) {
@@ -78,17 +82,37 @@ export default function BoardContainer () {
         localStorage.setItem('selectedCol', JSON.stringify(id));
     }
 
+    const clearAll = () => {
+        if (boardRef.current) {
+            boardRef.current.clearCanvas();
+        }
+    };
+
     return (
         <>
             <div className='main-container'>
                 <Container className='toolbar'>
                     {
                         toolbarElements.map((elem) => (
-                            <Col key={elem.id} className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => handleModeSelect(elem.id)}> 
-                                {elem.content}
-                            </Col>
+                            <div>
+                                <Tooltip title={elem.tooltip} position="top">
+                                    <Col key={elem.id} data-tooltip-content={elem.tooltip} data-tooltip-id={elem.id}
+                                        className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => handleModeSelect(elem.id)}> 
+                                        {elem.content}
+                                    </Col>
+                                </Tooltip>
+                            </div>
+                            
                         ))
                     }
+                    <div className='actions'>
+                        <Tooltip title="Clear All" position="top">
+                            <Col className='toolbar-segment' onClick={clearAll}>
+                                <ClearIcon />
+                            </Col>
+                        </Tooltip>
+                    </div>
+                    
                 </Container>
 
                 <div className='board-container'>
@@ -148,7 +172,7 @@ export default function BoardContainer () {
                         </div> */}
 
                     </div>
-                    <Board color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} mode={toolbarElements[selectedCol].name}/>
+                    <Board ref={boardRef} color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} mode={toolbarElements[selectedCol].name}/>
                 </div>
             </div>
         </>

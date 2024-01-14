@@ -22,6 +22,11 @@
     margin-bottom: 10px;
 }
 
+.toolbar .actions {
+    border-left: 1px solid;
+    padding-left: 2px;
+}
+
 .board-container {
     position: fixed;
     top: 0;

@@ -1,5 +1,6 @@
 /**
  * Stores stack of different drawn objects for redrawing
+ * Handles syncing of collaborative whiteboards
  * @param ctx, width, height
  */
 import Draw from '../functions/Draw';
@@ -72,6 +73,12 @@ export default class Store {
         Object.keys(this.objects).forEach(key => {
             const Func = this.functions[key];
             Func.drawAll(this.ctx, this.objects[key]);
+        })
+    }
+
+    clear() {
+        Object.keys(this.objects).forEach(key => {
+            this.objects[key] = []
         })
     }
 }
