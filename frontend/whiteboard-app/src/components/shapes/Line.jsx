@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Rectangle ({ ctx, mode, canvasSettings }) {
+export default function Line ({ ctx, mode, canvasSettings }) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (ctx && mode === 'square') {
+        if (ctx && mode === 'line') {
             let isDrawing = false;
             let started = false;
             let start = {};
@@ -22,8 +22,8 @@ export default function Rectangle ({ ctx, mode, canvasSettings }) {
                 if (!isDrawing) return;
                 if (started) dispatch(undo());
                 end = { x: e.offsetX, y: e.offsetY };
-                const rectangleObject = {left: Math.min(start.x, end.x), top: Math.min(start.y, end.y), width: Math.abs(start.x - end.x), height: Math.abs(start.y - end.y)};
-                dispatch(addShape({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings}));
+                const lineObject = {startX: start.x, startY: start.y, endX: end.x, endY: end.y};
+                dispatch(addShape({type: 'line', details: lineObject, canvasSettings: canvasSettings}));
                 started = true;
             };
         

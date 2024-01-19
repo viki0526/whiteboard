@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Rectangle ({ ctx, mode, canvasSettings }) {
+export default function Circle ({ ctx, mode, canvasSettings }) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (ctx && mode === 'square') {
+        if (ctx && mode === 'circle') {
             let isDrawing = false;
             let started = false;
             let start = {};
@@ -21,9 +21,13 @@ export default function Rectangle ({ ctx, mode, canvasSettings }) {
             const draw = (e) => {
                 if (!isDrawing) return;
                 if (started) dispatch(undo());
+                const radiusX = Math.abs(end.x - start.x) / 2;
+                const radiusY = Math.abs(end.y - start.y) / 2;
+                const centerX = Math.min(end.x, start.x) + radiusX;
+                const centerY = Math.min(end.y, start.y) + radiusY;
+                const circleObject = {centerX: centerX, centerY: centerY, radiusX: radiusX, radiusY: radiusY};
+                dispatch(addShape({type: 'circle', details: circleObject, canvasSettings: canvasSettings}));
                 end = { x: e.offsetX, y: e.offsetY };
-                const rectangleObject = {left: Math.min(start.x, end.x), top: Math.min(start.y, end.y), width: Math.abs(start.x - end.x), height: Math.abs(start.y - end.y)};
-                dispatch(addShape({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings}));
                 started = true;
             };
         

@@ -3,6 +3,11 @@ import '../css/Board.css';
 import useDrawing from '../components/hooks/useDrawing'
 
 import Rectangle from './shapes/Rectangle';
+import Draw from './shapes/Draw';
+import Diamond from './shapes/Diamond';
+import Line from './shapes/Line';
+import Circle from './shapes//Circle';
+
 
 /**
  * 
@@ -13,9 +18,7 @@ import Rectangle from './shapes/Rectangle';
  */
 const Board = (props) => {
     const canvasRef = useRef();
-    // const ctxRef = useRef();
     const [ctx, setCtx] = useState();
-    let hookLoaded = false;
 
     useEffect(() => {
         canvasRef.current.width = canvasRef.current.offsetWidth;
@@ -24,12 +27,15 @@ const Board = (props) => {
     }, []); 
 
     useDrawing(ctx);
-    hookLoaded = true;
 
     return (
         <>
             <canvas ref={canvasRef} className='board' id='board'></canvas>
             <Rectangle ctx={ctx} mode={props.mode} canvasSettings={props} />
+            <Diamond ctx={ctx} mode={props.mode} canvasSettings={props} />
+            <Circle ctx={ctx} mode={props.mode} canvasSettings={props} />
+            <Line ctx={ctx} mode={props.mode} canvasSettings={props} />
+            <Draw ctx={ctx} mode={props.mode} canvasSettings={props} />
         </>
     );
 };

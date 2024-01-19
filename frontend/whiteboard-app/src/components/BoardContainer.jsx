@@ -2,10 +2,10 @@ import React, {useState, useEffect, useRef} from 'react';
 import '../css/BoardContainer.css';
 import Board from './Board'
 import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import 'react-tippy/dist/tippy.css'
 import { Tooltip } from 'react-tippy';
+
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
 import {ReactComponent as EllipseIcon} from '../assets/EllipseIcon.svg';

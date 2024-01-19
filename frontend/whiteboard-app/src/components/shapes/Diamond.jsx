@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Rectangle ({ ctx, mode, canvasSettings }) {
+export default function Diamond ({ ctx, mode, canvasSettings }) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (ctx && mode === 'square') {
+        if (ctx && mode === 'diamond') {
             let isDrawing = false;
             let started = false;
             let start = {};
@@ -22,8 +22,12 @@ export default function Rectangle ({ ctx, mode, canvasSettings }) {
                 if (!isDrawing) return;
                 if (started) dispatch(undo());
                 end = { x: e.offsetX, y: e.offsetY };
-                const rectangleObject = {left: Math.min(start.x, end.x), top: Math.min(start.y, end.y), width: Math.abs(start.x - end.x), height: Math.abs(start.y - end.y)};
-                dispatch(addShape({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings}));
+                const centerX = (start.x + end.x) / 2;
+                const centerY = (start.y + end.y) / 2;
+                const width = Math.abs(start.x - end.x);
+                const height = Math.abs(start.y - end.y);
+                const diamondObject = {centerX: centerX, centerY: centerY, width: width, height: height};
+                dispatch(addShape({type: 'diamond', details: diamondObject, canvasSettings: canvasSettings}));
                 started = true;
             };
         

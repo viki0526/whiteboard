@@ -1,3 +1,8 @@
+/**
+ * Redraws all the shapes in the store when the store changes
+ * Saves to localStorage to persist state on refresh
+ */
+
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { restoreShapes } from '../../store/shapeSlice';
@@ -20,7 +25,6 @@ const useDrawing = (ctx) => {
     }, [shapes]);
 
     const loadFromLocalStorage = () => {
-        console.log('loading from localStorage');
         const storedShapesJson = localStorage.getItem('shapes');
         if (storedShapesJson) {
             const storedShapes = JSON.parse(storedShapesJson);
@@ -50,10 +54,13 @@ const useDrawing = (ctx) => {
                 break;
             case 'circle':
                 drawCircle(shape.details, shape.canvasSettings);
+                break;
             case 'diamond':
                 drawDiamond(shape.details, shape.canvasSettings);
+                break;
             case 'draw':
                 drawFree(shape.details, shape.canvasSettings);
+                break;
             default:
                 console.warn(`Unknown shape type: ${shape.type}`);
         }
@@ -73,6 +80,7 @@ const useDrawing = (ctx) => {
     };
 
     const drawLine = (line) => {
+        console.log(line);
         ctx.beginPath();
         ctx.moveTo(line.startX, line.startY);
         ctx.lineTo(line.endX, line.endY);
@@ -82,25 +90,28 @@ const useDrawing = (ctx) => {
 
     const drawCircle = (circle) => {
         ctx.beginPath();
-        ctx.moveTo(line.startX, line.startY);
-        ctx.lineTo(line.endX, line.endY);
+        ctx.ellipse(circle.centerX, circle.centerY, circle.radiusX, circle.radiusY, 0, 0, 2 * Math.PI);
         ctx.stroke();
         ctx.closePath();
     };
 
     const drawDiamond = (diamond) => {
         ctx.beginPath();
-        ctx.moveTo(line.startX, line.startY);
-        ctx.lineTo(line.endX, line.endY);
-        ctx.stroke();
+        ctx.moveTo(diamond.centerX, diamond.centerY - diamond.height / 2); 
+        ctx.lineTo(diamond.centerX + diamond.width / 2, diamond.centerY); 
+        ctx.lineTo(diamond.centerX, diamond.centerY + diamond.height / 2); 
+        ctx.lineTo(diamond.centerX - diamond.width / 2, diamond.centerY);
         ctx.closePath();
+        ctx.stroke();
     };
 
-    const drawFree = (free) => {
+    const drawFree = (pathStore) => {
         ctx.beginPath();
-        ctx.moveTo(line.startX, line.startY);
-        ctx.lineTo(line.endX, line.endY);
-        ctx.stroke();
+        pathStore.forEach((stroke) => {
+            ctx.moveTo(stroke.startX, stroke.startY);
+            ctx.lineTo(stroke.endX, stroke.endY);
+            ctx.stroke();
+        })
         ctx.closePath();
     };
 

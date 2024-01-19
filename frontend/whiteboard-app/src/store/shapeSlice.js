@@ -11,7 +11,6 @@ export const shapesSlice = createSlice({
         },
         addShape: (state, action) => {
             state.value = [...state.value, action.payload]
-            // console.log(state.value);
         },
         clearShapes: (state) => {
             state.value = []
