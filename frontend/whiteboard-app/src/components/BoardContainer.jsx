@@ -13,6 +13,10 @@ import {ReactComponent as LineIcon} from '../assets/LineIcon.svg';
 import {ReactComponent as DrawIcon} from '../assets/DrawIcon.svg';
 import {ReactComponent as ClearIcon} from '../assets/ClearIcon.svg';
 
+import { useDispatch } from 'react-redux';
+import { clearShapes } from '../store/shapeSlice';
+
+
 export default function BoardContainer () {
     const colors = [{name: 'black', code: '#1e1e1e'}, {name: 'red', code: '#e03131'}, {name: 'green', code: '#2f9e44'}, {name: 'blue', code: '#1971c2'}, {name: 'orange', code: '#f08c00'}]
 
@@ -29,6 +33,8 @@ export default function BoardContainer () {
     const [selectedCol, setSelectedCol] = useState(0);
 
     const boardRef = useRef();
+
+    const dispatch = useDispatch();
 
     useEffect(() => {        
         const colorObj = JSON.parse(localStorage.getItem('selectedColor'));
@@ -83,9 +89,7 @@ export default function BoardContainer () {
     }
 
     const clearAll = () => {
-        if (boardRef.current) {
-            boardRef.current.clearCanvas();
-        }
+        dispatch(clearShapes());
     };
 
     return (
