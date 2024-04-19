@@ -40,7 +40,8 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
             const stopDrawing = (e) => {
                 isDrawing = false;
                 ctx.closePath();
-                dispatch(addShape({type: 'draw', details: pathStore, canvasSettings: canvasSettings}))
+                dispatch(addShape({type: 'draw', details: pathStore, canvasSettings: canvasSettings}));
+                pathStore = [];
             };
 
             const canvas = ctx.canvas;

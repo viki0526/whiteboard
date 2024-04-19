@@ -8,6 +8,8 @@ import Diamond from './shapes/Diamond';
 import Line from './shapes/Line';
 import Circle from './shapes//Circle';
 
+import { useDispatch } from 'react-redux';
+import { redraw } from '../store/shapeSlice';
 
 /**
  * 
@@ -19,11 +21,25 @@ import Circle from './shapes//Circle';
 const Board = (props) => {
     const canvasRef = useRef();
     const [ctx, setCtx] = useState();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        canvasRef.current.width = canvasRef.current.offsetWidth;
-        canvasRef.current.height = canvasRef.current.offsetHeight;
-        setCtx(canvasRef.current.getContext("2d"));
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+
+        const resize = () => {
+            console.log(window.innerWidth)
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            setCtx(context);
+            dispatch(redraw());
+        };
+
+        resize();
+        window.addEventListener('resize', resize);
+        return () => {
+            window.removeEventListener('resize', resize);
+        };
     }, []); 
 
     useDrawing(ctx);

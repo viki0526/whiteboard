@@ -80,7 +80,6 @@ const useDrawing = (ctx) => {
     };
 
     const drawLine = (line) => {
-        console.log(line);
         ctx.beginPath();
         ctx.moveTo(line.startX, line.startY);
         ctx.lineTo(line.endX, line.endY);

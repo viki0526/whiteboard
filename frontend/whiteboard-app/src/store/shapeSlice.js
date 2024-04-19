@@ -6,6 +6,10 @@ export const shapesSlice = createSlice({
         value: [],
     },
     reducers: {
+        redraw: (state) => {
+            // Does nothing, triggers change for redraw
+            state.value = state.value.slice(0, state.value.length);
+        },
         restoreShapes: (state, action) => {
             state.value = action.payload;
         },
@@ -22,6 +26,6 @@ export const shapesSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { restoreShapes, addShape, clearShapes, undo } = shapesSlice.actions
+export const { redraw, restoreShapes, addShape, clearShapes, undo } = shapesSlice.actions
 
 export default shapesSlice.reducer
