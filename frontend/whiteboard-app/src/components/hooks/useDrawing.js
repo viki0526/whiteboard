@@ -3,6 +3,8 @@
  * Saves to localStorage to persist state on refresh
  */
 
+/* global ml5 */
+
 import { useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
