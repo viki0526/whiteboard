@@ -28,7 +28,6 @@ const Board = (props) => {
         const context = canvas.getContext("2d");
 
         const resize = () => {
-            console.log(window.innerWidth)
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             setCtx(context);

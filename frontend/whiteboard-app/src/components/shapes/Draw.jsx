@@ -10,7 +10,7 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
         if (ctx && mode === 'draw') {
             let isDrawing = false;
             let start = {};
-            let pathStore = [];
+            let strokes = [];
 
             const setContext = (canvasSettings) => {
                 ctx.strokeStyle = canvasSettings.color;
@@ -25,23 +25,27 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
                 start = { x: e.offsetX, y: e.offsetY };
                 ctx.beginPath();
                 ctx.moveTo(start.x, start.y);
+                strokes.push({dx: start.x, dy: start.y, pen: 'up'});
             };
         
             const draw = (e) => {
                 if (!isDrawing) return;
                 const [currX, currY] = [e.offsetX, e.offsetY];
-                const drawObject = {startX: start.x, startY: start.y, endX: currX, endY: currY};
-                ctx.lineTo(drawObject.endX, drawObject.endY);
+                const dx = currX - start.x;
+                const dy = currY - start.y;
+                ctx.lineTo(currX, currY);
                 ctx.stroke();
-                pathStore.push(drawObject);
+                const stroke = {dx: dx, dy: dy, pen: 'down'};
+                strokes.push(stroke);
                 start = { x: currX, y: currY };
             };
         
             const stopDrawing = (e) => {
                 isDrawing = false;
                 ctx.closePath();
-                dispatch(addShape({type: 'draw', details: pathStore, canvasSettings: canvasSettings}));
-                pathStore = [];
+                strokes.push({dx: 0, dy: 0, pen: 'end'});
+                dispatch(addShape({type: 'draw', details: strokes, canvasSettings: canvasSettings}));
+                strokes = [];
             };
 
             const canvas = ctx.canvas;

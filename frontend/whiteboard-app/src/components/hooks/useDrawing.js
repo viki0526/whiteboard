@@ -4,12 +4,24 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { restoreShapes } from '../../store/shapeSlice';
 
 const useDrawing = (ctx) => {
+    const MAX_STROKES = 200;
     const shapes = useSelector((state) => state.value);
     const dispatch = useDispatch();
+
+    // For sketch-rnn autocomplete
+    let previousPen = 'down';
+
+    const rnnModel = useMemo(() => {
+        return ml5.sketchRNN('book', () => {
+            console.log('Model loaded', rnnModel);
+        })
+    }, []);
+
 
     useEffect(() => {
         if (ctx) {
@@ -104,15 +116,87 @@ const useDrawing = (ctx) => {
         ctx.stroke();
     };
 
-    const drawFree = (pathStore) => {
+    const drawFree = (strokes) => {
         ctx.beginPath();
-        pathStore.forEach((stroke) => {
-            ctx.moveTo(stroke.startX, stroke.startY);
-            ctx.lineTo(stroke.endX, stroke.endY);
-            ctx.stroke();
-        })
+        var x = 0, y = 0;
+        var i;
+        var dx, dy;
+        for (i = 0; i < strokes.length; i++) {
+            const stroke = strokes[i];
+            if (stroke.pen == 'up') {
+                x = stroke.dx;
+                y = stroke.dy;
+                ctx.moveTo(x, y);
+            } else if (stroke.pen == 'down') {
+                dx = stroke.dx;
+                dy = stroke.dy;
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + dx , y + dy);
+                ctx.stroke();
+                x += dx;
+                y += dy;
+            } else {
+                break;
+            }
+        }
         ctx.closePath();
+
+        autocompleteDrawing(strokes, x, y);
     };
+
+    // Helpers
+    function drawLineWithCoord(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.closePath();
+    }
+    function moveToCoord(x, y) {
+        ctx.moveTo(x, y);
+    }
+
+    const autocompleteDrawing = (strokes, endX, endY) => {
+        if (!rnnModel) {
+            console.log('Model not loaded');
+            return;
+        }
+        const seedStrokes = strokes.slice(1); // First stroke is the starting point
+        rnnModel.reset();
+        rnnModel.generate(seedStrokes, (error, newStroke) => {
+            gotStroke(error, newStroke, endX, endY, 0);
+        });
+    }
+    
+    // Recursively generates and draws strokes
+    function gotStroke(err, stroke, x, y, count) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log('Generated stroke:', stroke);
+        handleStroke(stroke, x, y, count);
+    }
+
+    function handleStroke(stroke, currX, currY, count) {
+        if (!stroke) {
+            console.log('max strokes reached');
+            return;
+        }
+        const {dx, dy, pen} = stroke;
+
+        if (previousPen === 'down') {
+            drawLineWithCoord(currX, currY, currX + dx, currY + dy);
+        }
+        moveToCoord(currX + dx, currY + dy);
+        previousPen = pen;
+
+        if (pen !== 'end') {
+            rnnModel.generate((error, newStroke) => {
+                gotStroke(error, newStroke, currX + dx, currY + dy, count + 1);
+            });
+        }
+    }
 
     return null;
 };
