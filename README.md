@@ -15,7 +15,7 @@ Welcome to our Collaborative Whiteboard App, a tool designed to enhance the way 
 - **Frontend**: React.js, Redux for state management, and Canvas API for drawing functionalities.
 - **AI Model**: `ml5.js` library to integrate the `sketch-rnn` model.
 - **Backend**: Node.js with Express for server-side logic; WebSocket for real-time communication.
-- **Deployment**: Deployed on vercel [here](https://whiteboard-pink.vercel.app/)
+- **Deployment**: Deployed on vercel [here](https://whiteboard-pink.vercel.app/container)
 
 ## Getting Started
 
