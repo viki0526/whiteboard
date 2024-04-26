@@ -10,19 +10,26 @@ import { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { restoreShapes } from '../../store/shapeSlice';
 
-const useDrawing = (ctx) => {
-    const MAX_STROKES = 200;
+const useDrawing = (ctx, model) => {
     const shapes = useSelector((state) => state.value);
     const dispatch = useDispatch();
 
+    const [modelChosen, setModelChosen] = useState(true);
+
     // For sketch-rnn autocomplete
     let previousPen = 'down';
+    let generatedStrokes = [];
 
     const rnnModel = useMemo(() => {
-        return ml5.sketchRNN('book', () => {
+        if (model === "Choose a model") {
+            setModelChosen(false);
+            return;
+        }
+        setModelChosen(true);
+        return ml5.sketchRNN(model, () => {
             console.log('Model loaded', rnnModel);
         })
-    }, []);
+    }, [model]);
 
 
     useEffect(() => {
@@ -61,19 +68,19 @@ const useDrawing = (ctx) => {
         setContext(shape.canvasSettings);
         switch (shape.type) {
             case 'rectangle':
-                drawRectangle(shape.details, shape.canvasSettings);
+                drawRectangle(shape.details);
                 break;
             case 'line':
-                drawLine(shape.details, shape.canvasSettings);
+                drawLine(shape.details);
                 break;
             case 'circle':
-                drawCircle(shape.details, shape.canvasSettings);
+                drawCircle(shape.details);
                 break;
             case 'diamond':
-                drawDiamond(shape.details, shape.canvasSettings);
+                drawDiamond(shape.details);
                 break;
             case 'draw':
-                drawFree(shape.details, shape.canvasSettings);
+                drawFree(shape.details);
                 break;
             default:
                 console.warn(`Unknown shape type: ${shape.type}`);
@@ -125,11 +132,11 @@ const useDrawing = (ctx) => {
         var dx, dy;
         for (i = 0; i < strokes.length; i++) {
             const stroke = strokes[i];
-            if (stroke.pen == 'up') {
+            if (stroke.pen === 'up') {
                 x = stroke.dx;
                 y = stroke.dy;
                 ctx.moveTo(x, y);
-            } else if (stroke.pen == 'down') {
+            } else if (stroke.pen === 'down') {
                 dx = stroke.dx;
                 dy = stroke.dy;
                 ctx.moveTo(x, y);
@@ -142,8 +149,9 @@ const useDrawing = (ctx) => {
             }
         }
         ctx.closePath();
-
-        autocompleteDrawing(strokes, x, y);
+        if (modelChosen) {
+            autocompleteDrawing(strokes, x, y);
+        }
     };
 
     // Helpers
@@ -163,8 +171,9 @@ const useDrawing = (ctx) => {
             console.log('Model not loaded');
             return;
         }
-        const seedStrokes = strokes.slice(1); // First stroke is the starting point
+        const seedStrokes = strokes.slice(1);
         rnnModel.reset();
+        console.log('model reset');
         rnnModel.generate(seedStrokes, (error, newStroke) => {
             gotStroke(error, newStroke, endX, endY, 0);
         });
@@ -176,7 +185,7 @@ const useDrawing = (ctx) => {
             console.error(err);
             return;
         }
-        console.log('Generated stroke:', stroke);
+        // console.log('Generated stroke:', stroke);
         handleStroke(stroke, x, y, count);
     }
 
@@ -192,12 +201,13 @@ const useDrawing = (ctx) => {
         }
         moveToCoord(currX + dx, currY + dy);
         previousPen = pen;
-
+        generatedStrokes.push(stroke);
         if (pen !== 'end') {
             rnnModel.generate((error, newStroke) => {
                 gotStroke(error, newStroke, currX + dx, currY + dy, count + 1);
             });
         }
+
     }
 
     return null;

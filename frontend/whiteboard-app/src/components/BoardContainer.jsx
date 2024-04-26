@@ -3,6 +3,7 @@ import '../css/BoardContainer.css';
 import Board from './Board'
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
+import Dropdown from 'react-bootstrap/Dropdown';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
 
@@ -26,11 +27,35 @@ export default function BoardContainer () {
         {id: 2, name: 'circle', content: <EllipseIcon />, tooltip: 'Circle'},
         {id: 3, name: 'line', content: <LineIcon />, tooltip: 'Line'},
         {id: 4, name: 'draw', content: <DrawIcon />, tooltip: 'Draw'},
-    ]
+    ];
+
+    const models = [
+        'alarm_clock', 'ambulance', 'angel', 'ant', 'antyoga',
+        'backpack', 'barn', 'basket', 'bear', 'bee',
+        'beeflower', 'bicycle', 'bird', 'book', 'brain',
+        'bridge', 'bulldozer', 'bus', 'butterfly', 'cactus',
+        'calendar', 'castle', 'cat', 'catbus', 'catpig',
+        'chair', 'couch', 'crab', 'cruise_ship', 'diving_board', 'dog', 
+        'dolphin', 'duck', 'elephant', 'eye', 'face',
+        'fan', 'fire_hydrant', 'firetruck', 'flamingo', 'flower',
+        'frog', 'garden', 'hand', 'hedgeberry', 'hedgehog', 'helicopter', 
+        'kangaroo', 'key', 'lantern', 'lighthouse', 'lion', 'lionsheep', 'lobster',
+        'map', 'mermaid', 'monapassport', 'monkey', 'mosquito',
+        'octopus', 'owl', 'paintbrush', 'palm_tree', 'parrot',
+        'passport', 'peas', 'penguin', 'pig', 'pigsheep',
+        'pineapple', 'pool', 'postcard', 'power_outlet', 'rabbit', 
+        'radio', 'radioface', 'rain', 'rhinoceros',
+        'rifle', 'roller_coaster', 'sandwich', 'scorpion', 'sea_turtle',
+        'sheep', 'skull', 'snail', 'snowflake', 'speedboat',
+        'spider', 'squirrel', 'steak', 'stove', 'strawberry'
+    ];
+
     const [selectedColor, setSelectedColor] = useState('#1e1e1e');
     const [strokeWidth, setStrokeWidth] = useState(1.2);
     const [opacity, setOpacity] = useState(1); // Not used currently
     const [selectedCol, setSelectedCol] = useState(0);
+
+    const [selectedModel, setSelectedModel] = useState("Choose a model");
 
     const boardRef = useRef();
 
@@ -88,6 +113,10 @@ export default function BoardContainer () {
         localStorage.setItem('selectedCol', JSON.stringify(id));
     }
 
+    const handleModelSelect = (model) => {
+        setSelectedModel(model);
+    }
+
     const clearAll = () => {
         dispatch(clearShapes());
     };
@@ -95,30 +124,48 @@ export default function BoardContainer () {
     return (
         <>
             <div className='main-container'>
-                <Container className='toolbar'>
-                    {
-                        toolbarElements.map((elem) => (
-                            <div>
-                                <Tooltip title={elem.tooltip} position="top">
-                                    <Col key={elem.id} data-tooltip-content={elem.tooltip} data-tooltip-id={elem.id}
-                                        className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => handleModeSelect(elem.id)}> 
-                                        {elem.content}
-                                    </Col>
-                                </Tooltip>
-                            </div>
-                            
-                        ))
-                    }
-                    <div className='actions'>
-                        <Tooltip title="Clear All" position="top">
-                            <Col className='toolbar-segment' onClick={clearAll}>
-                                <ClearIcon />
-                            </Col>
-                        </Tooltip>
-                    </div>
-                    
-                </Container>
-
+                <div className='top-container'>
+                    <Container className='toolbar'>
+                        {
+                            toolbarElements.map((elem) => (
+                                <div>
+                                    <Tooltip title={elem.tooltip} position="top">
+                                        <Col key={elem.id} data-tooltip-content={elem.tooltip} data-tooltip-id={elem.id}
+                                            className={'toolbar-segment' + (selectedCol === elem.id ? ' selected' : '')} onClick={() => handleModeSelect(elem.id)}> 
+                                            {elem.content}
+                                        </Col>
+                                    </Tooltip>
+                                </div>
+                                
+                            ))
+                        }
+                        <div className='actions'>
+                            <Tooltip title="Clear All" position="top">
+                                <Col className='toolbar-segment' onClick={clearAll}>
+                                    <ClearIcon />
+                                </Col>
+                            </Tooltip>
+                        </div>
+                        
+                    </Container>
+                    <Container className='model-select'>
+                        <Dropdown>
+                            <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                {selectedModel}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                <Dropdown.Item eventKey= "none" href="#/no-model" onClick={() => handleModelSelect('Choose a model')}> Choose a model </Dropdown.Item>
+                                {
+                                    models.map(model => (
+                                        <Dropdown.Item eventKey={model} href={"#/" + model} onClick={() => handleModelSelect(model)}> 
+                                            {model} 
+                                        </Dropdown.Item>
+                                    ))
+                                }
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </Container>
+                </div>
                 <div className='board-container'>
                     <div className='sidebar'>
                         <div className='option-title'>
@@ -176,7 +223,7 @@ export default function BoardContainer () {
                         </div> */}
 
                     </div>
-                    <Board ref={boardRef} color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} mode={toolbarElements[selectedCol].name}/>
+                    <Board ref={boardRef} color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} mode={toolbarElements[selectedCol].name} model={selectedModel}/>
                 </div>
             </div>
         </>

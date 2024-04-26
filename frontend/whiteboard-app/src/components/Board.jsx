@@ -41,7 +41,7 @@ const Board = (props) => {
         };
     }, []); 
 
-    useDrawing(ctx);
+    useDrawing(ctx, props.model);
 
     return (
         <>

@@ -142,3 +142,24 @@
 .opacity-slider input {
     width: 100%;
 }
+
+.main-container .top-container {
+    display: flex;
+    align-items: center;
+}
+
+.model-select.container {
+    z-index: 10;
+    position: absolute;
+    width: fit-content;
+    right: 0;
+    padding-right: 20px;
+}
+
+.model-select.container .dropdown-toggle{
+    background-color: white;
+    border-color: black;
+    color: black;
+    --bs-btn-active-bg: white;
+    --bs-btn-active-color: black;
+}
