@@ -1,6 +1,7 @@
 /**
  * Redraws all the shapes in the store when the store changes
  * Saves to localStorage to persist state on refresh
+ * Draws autcomplete suggestions
  */
 
 /* global ml5 */
@@ -17,8 +18,14 @@ const useDrawing = (ctx, model) => {
     const [modelChosen, setModelChosen] = useState(true);
 
     // For sketch-rnn autocomplete
-    let previousPen = 'down';
-    let generatedStrokes = [];
+    let generatedStrokes = []; 
+    var startX; var startY;
+
+    function resetStrokeParams() {
+        generatedStrokes = [];
+        startX = 0;
+        startY = 0;
+    }
 
     const rnnModel = useMemo(() => {
         if (model === "Choose a model") {
@@ -150,6 +157,8 @@ const useDrawing = (ctx, model) => {
         }
         ctx.closePath();
         if (modelChosen) {
+            startX = x;
+            startY = y;
             autocompleteDrawing(strokes, x, y);
         }
     };
@@ -185,8 +194,22 @@ const useDrawing = (ctx, model) => {
             console.error(err);
             return;
         }
-        // console.log('Generated stroke:', stroke);
         handleStroke(stroke, x, y, count);
+    }
+
+    function animateStrokes(generatedStrokes, i, startX, startY, prevPen) {        
+        moveToCoord(startX, startY);
+        const {dx, dy, pen} = generatedStrokes[i];
+        if (prevPen === 'down') {
+            drawLineWithCoord(startX, startY, startX + dx, startY + dy);
+        }
+        if (pen === 'end') {
+            return;
+        }
+        moveToCoord(startX + dx, startY + dy);
+        setTimeout(function() {
+            animateStrokes(generatedStrokes, i + 1, startX + dx, startY + dy, pen);
+        }, 10);
     }
 
     function handleStroke(stroke, currX, currY, count) {
@@ -195,19 +218,17 @@ const useDrawing = (ctx, model) => {
             return;
         }
         const {dx, dy, pen} = stroke;
-
-        if (previousPen === 'down') {
-            drawLineWithCoord(currX, currY, currX + dx, currY + dy);
-        }
-        moveToCoord(currX + dx, currY + dy);
-        previousPen = pen;
         generatedStrokes.push(stroke);
-        if (pen !== 'end') {
-            rnnModel.generate((error, newStroke) => {
-                gotStroke(error, newStroke, currX + dx, currY + dy, count + 1);
-            });
-        }
 
+        if (pen === 'end') {
+            console.log(generatedStrokes);
+            animateStrokes(generatedStrokes, 0, startX, startY, 'down');
+            resetStrokeParams();
+            return;
+        }
+        rnnModel.generate((error, newStroke) => {
+            gotStroke(error, newStroke, currX + dx, currY + dy, count + 1);
+        });
     }
 
     return null;
