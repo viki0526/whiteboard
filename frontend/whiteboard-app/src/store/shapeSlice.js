@@ -20,6 +20,9 @@ export const shapesSlice = createSlice({
             state.value = []
         },
         undo: (state) => {
+            if (state.value.length === 0) {
+                return;
+            }
             state.value = state.value.slice(0, -1);
         }
     },

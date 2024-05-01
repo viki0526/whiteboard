@@ -53,7 +53,6 @@ const useDrawing = (ctx, model) => {
             }
             else if (event.key === 'Enter') {
                 const genStrokes = [{dx: startX.current, dy: startY.current, pen: 'down'}, ...generatedStrokes.current];
-                console.log('Enter', {type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true});
                 dispatch(addShape({type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true}));
             } else {
                 // do nothing
@@ -150,7 +149,6 @@ const useDrawing = (ctx, model) => {
 
     const drawFree = (strokes, last, autocomplete) => {
         if (strokes.length === 0) return;
-        console.log(strokes);
         const start = strokes[0];
         var x = start.dx, y = start.dy;
         var i;

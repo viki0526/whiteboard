@@ -1,35 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useDispatch } from 'react-redux';
 import { addShape, undo } from '../../store/shapeSlice';
 
 export default function Rectangle ({ ctx, mode, canvasSettings }) {
     const dispatch = useDispatch();
+    const isDrawing = useRef(false);
+    const start = useRef({});
+    const end = useRef({});
+    const started = useRef(false);
+
 
     useEffect(() => {
         if (ctx && mode === 'square') {
-            let isDrawing = false;
-            let started = false;
-            let start = {};
-            let end = {};
-
             const startDrawing = (e) => {
-                isDrawing = true;
-                start = { x: e.offsetX, y: e.offsetY };
+                isDrawing.current = true;
+                start.current = { x: e.offsetX, y: e.offsetY };
             };
         
             const draw = (e) => {
-                if (!isDrawing) return;
-                if (started) dispatch(undo());
-                end = { x: e.offsetX, y: e.offsetY };
-                const rectangleObject = {left: Math.min(start.x, end.x), top: Math.min(start.y, end.y), width: Math.abs(start.x - end.x), height: Math.abs(start.y - end.y)};
+                if (!isDrawing.current) return;
+                if (started.current) dispatch(undo());
+                end.current = { x: e.offsetX, y: e.offsetY };
+                const rectangleObject = {left: Math.min(start.current.x, end.current.x), top: Math.min(start.current.y, end.current.y), 
+                                        width: Math.abs(start.current.x - end.current.x), height: Math.abs(start.current.y - end.current.y)};
                 dispatch(addShape({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings}));
-                started = true;
+                started.current = true;
             };
         
             const stopDrawing = (e) => {
-                isDrawing = false;
-                started = false;
+                isDrawing.current = false;
+                started.current = false;
             };
 
             const canvas = ctx.canvas;

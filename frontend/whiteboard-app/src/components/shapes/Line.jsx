@@ -1,35 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useDispatch } from 'react-redux';
 import { addShape, undo } from '../../store/shapeSlice';
 
 export default function Line ({ ctx, mode, canvasSettings }) {
     const dispatch = useDispatch();
+    const isDrawing = useRef(false);
+    const start = useRef({});
+    const end = useRef({});
+    const started = useRef(false);
+
 
     useEffect(() => {
         if (ctx && mode === 'line') {
-            let isDrawing = false;
-            let started = false;
-            let start = {};
-            let end = {};
-
             const startDrawing = (e) => {
-                isDrawing = true;
-                start = { x: e.offsetX, y: e.offsetY };
+                isDrawing.current = true;
+                start.current = { x: e.offsetX, y: e.offsetY };
             };
         
             const draw = (e) => {
-                if (!isDrawing) return;
-                if (started) dispatch(undo());
-                end = { x: e.offsetX, y: e.offsetY };
-                const lineObject = {startX: start.x, startY: start.y, endX: end.x, endY: end.y};
+                if (!isDrawing.current) return;
+                if (started.current) dispatch(undo());
+                end.current = { x: e.offsetX, y: e.offsetY };
+                const lineObject = {startX: start.current.x, startY: start.current.y, endX: end.current.x, endY: end.current.y};
                 dispatch(addShape({type: 'line', details: lineObject, canvasSettings: canvasSettings}));
-                started = true;
+                started.current = true;
             };
         
             const stopDrawing = (e) => {
-                isDrawing = false;
-                started = false;
+                isDrawing.current = false;
+                started.current = false;
             };
 
             const canvas = ctx.canvas;
