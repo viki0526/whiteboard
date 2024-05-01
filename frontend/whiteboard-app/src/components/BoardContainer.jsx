@@ -6,6 +6,8 @@ import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
+import { useSearchParams } from "react-router-dom";
+
 
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
@@ -30,6 +32,7 @@ export default function BoardContainer () {
     ];
 
     const models = [
+        'none',
         'alarm_clock', 'ambulance', 'angel', 'ant', 'antyoga',
         'backpack', 'barn', 'basket', 'bear', 'bee',
         'beeflower', 'bicycle', 'bird', 'book', 'brain',
@@ -55,10 +58,10 @@ export default function BoardContainer () {
     const [opacity, setOpacity] = useState(1); // Not used currently
     const [selectedCol, setSelectedCol] = useState(0);
 
-    const [selectedModel, setSelectedModel] = useState("Choose a model");
+    const [selectedModel, setSelectedModel] = useState("none");
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const boardRef = useRef();
-
     const dispatch = useDispatch();
 
     useEffect(() => {        
@@ -68,12 +71,21 @@ export default function BoardContainer () {
         loadFromLocalStorage(colorObj, handleColorSelect);
         loadFromLocalStorage(strokeWidthObj, handleStrokeWidthSelect);
         loadFromLocalStorage(mode, setSelectedCol);
+        setModelFromURL();
     }, [])
 
     const loadFromLocalStorage = (val, handleSelect) => {
         if (val) {
             handleSelect(val);
         }
+    }
+
+    const setModelFromURL = () => {
+        if (!searchParams.get('model')) {
+            setSelectedModel('none');
+            return;
+        }
+        setSelectedModel(searchParams.get('model'));
     }
 
     const handleColorSelect = (obj) => {
@@ -115,6 +127,7 @@ export default function BoardContainer () {
 
     const handleModelSelect = (model) => {
         setSelectedModel(model);
+        setSearchParams({'model': model})
     }
 
     const clearAll = () => {
@@ -151,14 +164,14 @@ export default function BoardContainer () {
                     <Container className='model-select'>
                         <Dropdown>
                             <Dropdown.Toggle variant="success" id="dropdown-basic">
-                                {selectedModel}
+                                {selectedModel === 'none' ? 'Choose a model' : selectedModel}
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                <Dropdown.Item eventKey= "none" href="#/no-model" onClick={() => handleModelSelect('Choose a model')}> Choose a model </Dropdown.Item>
+                                {/* <Dropdown.Item eventKey= "none" onClick={() => handleModelSelect('Choose a model')}> Choose a model </Dropdown.Item> */}
                                 {
                                     models.map(model => (
-                                        <Dropdown.Item eventKey={model} href={"#/" + model} onClick={() => handleModelSelect(model)}> 
-                                            {model} 
+                                        <Dropdown.Item eventKey={model} onClick={() => handleModelSelect(model)}> 
+                                            {model !== 'none' ? model : 'Choose a model'} 
                                         </Dropdown.Item>
                                     ))
                                 }

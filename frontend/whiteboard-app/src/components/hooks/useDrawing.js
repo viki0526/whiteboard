@@ -28,7 +28,7 @@ const useDrawing = (ctx, model) => {
     }
 
     const rnnModel = useMemo(() => {
-        if (model === "Choose a model") {
+        if (model === "none") {
             setModelChosen(false);
             return;
         }
@@ -52,6 +52,24 @@ const useDrawing = (ctx, model) => {
         }
     }, [shapes]);
 
+    useEffect(() => {
+        const handleKeydown = (event) => {
+            if (event.key === 'ArrowRight') {
+                console.log('Right arrow pressed');
+            }
+            else if (event.key === 'Enter') {
+                console.log('Enter pressed');
+            } else {
+                // do nothing
+            }
+        };
+
+        document.addEventListener('keydown', handleKeydown);
+        return () => {
+            document.removeEventListener('keydown', handleKeydown);
+        };
+    }, []);
+
     const loadFromLocalStorage = () => {
         const storedShapesJson = localStorage.getItem('shapes');
         if (storedShapesJson) {
@@ -66,12 +84,12 @@ const useDrawing = (ctx, model) => {
 
     const redrawAllShapes = () => {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        shapes.forEach((shape) => {
-            drawShape(shape);
-        });
+        for (var i = 0; i < shapes.length; i++) {
+            drawShape(shapes[i], i === shapes.length - 1);
+        }
     };
 
-    const drawShape = (shape) => {
+    const drawShape = (shape, last) => {
         setContext(shape.canvasSettings);
         switch (shape.type) {
             case 'rectangle':
@@ -87,7 +105,7 @@ const useDrawing = (ctx, model) => {
                 drawDiamond(shape.details);
                 break;
             case 'draw':
-                drawFree(shape.details);
+                drawFree(shape.details, last);
                 break;
             default:
                 console.warn(`Unknown shape type: ${shape.type}`);
@@ -132,7 +150,7 @@ const useDrawing = (ctx, model) => {
         ctx.stroke();
     };
 
-    const drawFree = (strokes) => {
+    const drawFree = (strokes, last) => {
         ctx.beginPath();
         var x = 0, y = 0;
         var i;
@@ -156,7 +174,8 @@ const useDrawing = (ctx, model) => {
             }
         }
         ctx.closePath();
-        if (modelChosen) {
+        // Only autocomplete if last shape
+        if (modelChosen && last) {
             startX = x;
             startY = y;
             autocompleteDrawing(strokes, x, y);
@@ -188,7 +207,7 @@ const useDrawing = (ctx, model) => {
         });
     }
     
-    // Recursively generates and draws strokes
+    // Recursively generates strokes
     function gotStroke(err, stroke, x, y, count) {
         if (err) {
             console.error(err);
@@ -197,7 +216,7 @@ const useDrawing = (ctx, model) => {
         handleStroke(stroke, x, y, count);
     }
 
-    function animateStrokes(generatedStrokes, i, startX, startY, prevPen) {        
+    function animateStrokes(generatedStrokes, i, startX, startY, prevPen) {
         moveToCoord(startX, startY);
         const {dx, dy, pen} = generatedStrokes[i];
         if (prevPen === 'down') {
@@ -221,7 +240,6 @@ const useDrawing = (ctx, model) => {
         generatedStrokes.push(stroke);
 
         if (pen === 'end') {
-            console.log(generatedStrokes);
             animateStrokes(generatedStrokes, 0, startX, startY, 'down');
             resetStrokeParams();
             return;
