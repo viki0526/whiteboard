@@ -6,26 +6,20 @@
 
 /* global ml5 */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { restoreShapes } from '../../store/shapeSlice';
+import { restoreShapes, redraw, addShape } from '../../store/shapeSlice';
 
 const useDrawing = (ctx, model) => {
     const shapes = useSelector((state) => state.value);
     const dispatch = useDispatch();
 
     const [modelChosen, setModelChosen] = useState(true);
-
-    // For sketch-rnn autocomplete
-    let generatedStrokes = []; 
-    var startX; var startY;
-
-    function resetStrokeParams() {
-        generatedStrokes = [];
-        startX = 0;
-        startY = 0;
-    }
+    const autocompleteSettings = useRef({color: '#000000', opacity: 1, strokeWidth: 2.5});
+    const generatedStrokes = useRef([]); 
+    const startX = useRef(0);
+    const startY = useRef(0);
 
     const rnnModel = useMemo(() => {
         if (model === "none") {
@@ -55,20 +49,21 @@ const useDrawing = (ctx, model) => {
     useEffect(() => {
         const handleKeydown = (event) => {
             if (event.key === 'ArrowRight') {
-                console.log('Right arrow pressed');
+                dispatch(redraw());
             }
             else if (event.key === 'Enter') {
-                console.log('Enter pressed');
+                const genStrokes = [{dx: startX.current, dy: startY.current, pen: 'down'}, ...generatedStrokes.current];
+                console.log('Enter', {type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true});
+                dispatch(addShape({type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true}));
             } else {
                 // do nothing
             }
         };
-
         document.addEventListener('keydown', handleKeydown);
         return () => {
             document.removeEventListener('keydown', handleKeydown);
         };
-    }, []);
+    }, [ctx]);
 
     const loadFromLocalStorage = () => {
         const storedShapesJson = localStorage.getItem('shapes');
@@ -90,6 +85,9 @@ const useDrawing = (ctx, model) => {
     };
 
     const drawShape = (shape, last) => {
+        if (last) {
+            autocompleteSettings.current = shape.canvasSettings
+        }
         setContext(shape.canvasSettings);
         switch (shape.type) {
             case 'rectangle':
@@ -105,7 +103,7 @@ const useDrawing = (ctx, model) => {
                 drawDiamond(shape.details);
                 break;
             case 'draw':
-                drawFree(shape.details, last);
+                drawFree(shape.details, last, shape.autocomplete);
                 break;
             default:
                 console.warn(`Unknown shape type: ${shape.type}`);
@@ -150,40 +148,44 @@ const useDrawing = (ctx, model) => {
         ctx.stroke();
     };
 
-    const drawFree = (strokes, last) => {
-        ctx.beginPath();
-        var x = 0, y = 0;
+    const drawFree = (strokes, last, autocomplete) => {
+        if (strokes.length === 0) return;
+        console.log(strokes);
+        const start = strokes[0];
+        var x = start.dx, y = start.dy;
         var i;
-        var dx, dy;
-        for (i = 0; i < strokes.length; i++) {
+        var dx = 0, dy = 0;
+        var prevPen = 'down';
+        moveToCoord(x, y);
+        for (i = 1; i < strokes.length; i++) {
             const stroke = strokes[i];
-            if (stroke.pen === 'up') {
-                x = stroke.dx;
-                y = stroke.dy;
-                ctx.moveTo(x, y);
-            } else if (stroke.pen === 'down') {
-                dx = stroke.dx;
-                dy = stroke.dy;
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + dx , y + dy);
-                ctx.stroke();
-                x += dx;
-                y += dy;
-            } else {
+            dx = stroke.dx;
+            dy = stroke.dy;
+            if (prevPen === 'down') {
+                drawLineWithCoord(x, y, x + dx, y + dy);
+            }
+            moveToCoord(x + dx, y + dy);
+            if (prevPen === 'end') {
                 break;
             }
+            x += dx;
+            y += dy;
+            prevPen = stroke.pen;
         }
-        ctx.closePath();
-        // Only autocomplete if last shape
-        if (modelChosen && last) {
-            startX = x;
-            startY = y;
+        // Only autocomplete if last shape and not already an autocompletion
+        if (modelChosen && last && !autocomplete) {
+            startX.current = x;
+            startY.current = y;
+            generatedStrokes.current = [];
             autocompleteDrawing(strokes, x, y);
         }
     };
 
     // Helpers
-    function drawLineWithCoord(x1, y1, x2, y2) {
+    function drawLineWithCoord(x1, y1, x2, y2, color) {
+        if (color !== undefined) {
+            ctx.strokeStyle = color;
+        }
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -216,19 +218,27 @@ const useDrawing = (ctx, model) => {
         handleStroke(stroke, x, y, count);
     }
 
-    function animateStrokes(generatedStrokes, i, startX, startY, prevPen) {
-        moveToCoord(startX, startY);
-        const {dx, dy, pen} = generatedStrokes[i];
+    function animateStrokes(i, currX, currY, prevPen, selectedColor) {
+        if (i >= generatedStrokes.current.length) return;
+
+        moveToCoord(currX, currY);
+        const {dx, dy, pen} = generatedStrokes.current[i];
         if (prevPen === 'down') {
-            drawLineWithCoord(startX, startY, startX + dx, startY + dy);
+            drawLineWithCoord(currX, currY, currX + dx, currY + dy, '#d3d3d3');
         }
         if (pen === 'end') {
+            ctx.strokeStyle = selectedColor; // Reset to originial color
             return;
         }
-        moveToCoord(startX + dx, startY + dy);
-        setTimeout(function() {
-            animateStrokes(generatedStrokes, i + 1, startX + dx, startY + dy, pen);
+        moveToCoord(currX + dx, currY + dy);
+        setTimeout(() => {
+            animateStrokes(i + 1, currX + dx, currY + dy, pen, selectedColor);
         }, 10);
+    }
+
+    function generateSuggestion() {
+        const selectedColor = ctx.strokeStyle;
+        animateStrokes(0, startX.current, startY.current, 'down', selectedColor);
     }
 
     function handleStroke(stroke, currX, currY, count) {
@@ -237,11 +247,10 @@ const useDrawing = (ctx, model) => {
             return;
         }
         const {dx, dy, pen} = stroke;
-        generatedStrokes.push(stroke);
+        generatedStrokes.current = [...generatedStrokes.current, stroke];
 
         if (pen === 'end') {
-            animateStrokes(generatedStrokes, 0, startX, startY, 'down');
-            resetStrokeParams();
+            generateSuggestion();
             return;
         }
         rnnModel.generate((error, newStroke) => {

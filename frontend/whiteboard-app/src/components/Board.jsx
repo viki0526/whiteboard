@@ -43,14 +43,16 @@ const Board = (props) => {
 
     useDrawing(ctx, props.model);
 
+    const settings = {color: props.color, opacity: props.opacity, strokeWidth: props.strokeWidth};
+
     return (
         <>
             <canvas ref={canvasRef} className='board' id='board'></canvas>
-            <Rectangle ctx={ctx} mode={props.mode} canvasSettings={props} />
-            <Diamond ctx={ctx} mode={props.mode} canvasSettings={props} />
-            <Circle ctx={ctx} mode={props.mode} canvasSettings={props} />
-            <Line ctx={ctx} mode={props.mode} canvasSettings={props} />
-            <Draw ctx={ctx} mode={props.mode} canvasSettings={props} />
+            <Rectangle ctx={ctx} mode={props.mode} canvasSettings={settings} />
+            <Diamond ctx={ctx} mode={props.mode} canvasSettings={settings} />
+            <Circle ctx={ctx} mode={props.mode} canvasSettings={settings} />
+            <Line ctx={ctx} mode={props.mode} canvasSettings={settings} />
+            <Draw ctx={ctx} mode={props.mode} canvasSettings={settings} />
         </>
     );
 };

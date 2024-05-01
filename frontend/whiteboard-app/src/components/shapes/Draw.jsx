@@ -25,7 +25,7 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
                 start = { x: e.offsetX, y: e.offsetY };
                 ctx.beginPath();
                 ctx.moveTo(start.x, start.y);
-                strokes.push({dx: start.x, dy: start.y, pen: 'up'});
+                strokes.push({dx: start.x, dy: start.y, pen: 'down'});
             };
         
             const draw = (e) => {
@@ -43,8 +43,11 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
             const stopDrawing = (e) => {
                 isDrawing = false;
                 ctx.closePath();
-                strokes.push({dx: 0, dy: 0, pen: 'end'});
-                dispatch(addShape({type: 'draw', details: strokes, canvasSettings: canvasSettings}));
+                // Pop last stroke and change pen to end
+                let lastStroke = strokes.pop();
+                lastStroke.pen = 'end';
+                strokes.push(lastStroke);
+                dispatch(addShape({type: 'draw', details: strokes, canvasSettings: canvasSettings, autocomplete: false}));
                 strokes = [];
             };
 
