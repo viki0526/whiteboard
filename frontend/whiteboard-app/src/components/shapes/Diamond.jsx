@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
+import useWhiteboardSession from '../hooks/useWhiteboardSession';
 
-import { useDispatch } from 'react-redux';
-import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Diamond ({ ctx, mode, canvasSettings }) {
-    const dispatch = useDispatch();
+export default function Diamond ({ ctx, mode, sessionId, canvasSettings }) {
+    const {addShapeToSession, undoShapeFromSession} = useWhiteboardSession(sessionId);
     const isDrawing = useRef(false);
     const start = useRef({});
     const end = useRef({});
@@ -19,14 +18,14 @@ export default function Diamond ({ ctx, mode, canvasSettings }) {
         
             const draw = (e) => {
                 if (!isDrawing.current) return;
-                if (started.current) dispatch(undo());
+                if (started.current) undoShapeFromSession();
                 end.current = { x: e.offsetX, y: e.offsetY };
                 const centerX = (start.current.x + end.current.x) / 2;
                 const centerY = (start.current.y + end.current.y) / 2;
                 const width = Math.abs(start.current.x - end.current.x);
                 const height = Math.abs(start.current.y - end.current.y);
                 const diamondObject = {centerX: centerX, centerY: centerY, width: width, height: height};
-                dispatch(addShape({type: 'diamond', details: diamondObject, canvasSettings: canvasSettings}));
+                addShapeToSession({type: 'diamond', details: diamondObject, canvasSettings: canvasSettings});
                 started.current = true;
             };
         

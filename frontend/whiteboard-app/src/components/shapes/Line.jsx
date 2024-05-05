@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
+import useWhiteboardSession from '../hooks/useWhiteboardSession';
 
-import { useDispatch } from 'react-redux';
-import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Line ({ ctx, mode, canvasSettings }) {
-    const dispatch = useDispatch();
+export default function Line ({ ctx, mode, sessionId, canvasSettings }) {
+    const {addShapeToSession, undoShapeFromSession} = useWhiteboardSession(sessionId);
     const isDrawing = useRef(false);
     const start = useRef({});
     const end = useRef({});
@@ -20,10 +19,10 @@ export default function Line ({ ctx, mode, canvasSettings }) {
         
             const draw = (e) => {
                 if (!isDrawing.current) return;
-                if (started.current) dispatch(undo());
+                if (started.current) undoShapeFromSession();
                 end.current = { x: e.offsetX, y: e.offsetY };
                 const lineObject = {startX: start.current.x, startY: start.current.y, endX: end.current.x, endY: end.current.y};
-                dispatch(addShape({type: 'line', details: lineObject, canvasSettings: canvasSettings}));
+                addShapeToSession({type: 'line', details: lineObject, canvasSettings: canvasSettings});
                 started.current = true;
             };
         

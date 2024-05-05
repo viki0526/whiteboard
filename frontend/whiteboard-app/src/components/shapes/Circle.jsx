@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
+import useWhiteboardSession from '../hooks/useWhiteboardSession';
 
-import { useDispatch } from 'react-redux';
-import { addShape, undo } from '../../store/shapeSlice';
 
-export default function Circle ({ ctx, mode, canvasSettings }) {
-    const dispatch = useDispatch();
+export default function Circle ({ ctx, mode, sessionId, canvasSettings }) {
+    const {addShapeToSession, undoShapeFromSession} = useWhiteboardSession(sessionId);
     const isDrawing = useRef(false);
     const start = useRef({});
     const end = useRef({});
@@ -20,14 +19,13 @@ export default function Circle ({ ctx, mode, canvasSettings }) {
         
             const draw = (e) => {
                 if (!isDrawing.current) return;
-                if (started.current) dispatch(undo());
+                if (started.current) undoShapeFromSession();
                 const radiusX = Math.abs(end.current.x - start.current.x) / 2;
                 const radiusY = Math.abs(end.current.y - start.current.y) / 2;
                 const centerX = Math.min(end.current.x, start.current.x) + radiusX;
                 const centerY = Math.min(end.current.y, start.current.y) + radiusY;
                 const circleObject = {centerX: centerX, centerY: centerY, radiusX: radiusX, radiusY: radiusY};
-                dispatch(addShape({type: 'circle', details: circleObject, canvasSettings: canvasSettings}));
-                console.log('drawing circle', circleObject);
+                addShapeToSession({type: 'circle', details: circleObject, canvasSettings: canvasSettings});
                 end.current = { x: e.offsetX, y: e.offsetY };
                 started.current = true;
             };

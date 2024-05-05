@@ -1,10 +1,8 @@
 import { useEffect, useRef } from 'react';
+import useWhiteboardSession from '../hooks/useWhiteboardSession';
 
-import { useDispatch } from 'react-redux';
-import { addShape, undo } from '../../store/shapeSlice';
-
-export default function Rectangle ({ ctx, mode, canvasSettings }) {
-    const dispatch = useDispatch();
+export default function Rectangle ({ ctx, mode, sessionId, canvasSettings }) {
+    const {addShapeToSession, undoShapeFromSession} = useWhiteboardSession(sessionId);
     const isDrawing = useRef(false);
     const start = useRef({});
     const end = useRef({});
@@ -17,14 +15,14 @@ export default function Rectangle ({ ctx, mode, canvasSettings }) {
                 isDrawing.current = true;
                 start.current = { x: e.offsetX, y: e.offsetY };
             };
-        
+
             const draw = (e) => {
                 if (!isDrawing.current) return;
-                if (started.current) dispatch(undo());
+                if (started.current) undoShapeFromSession();
                 end.current = { x: e.offsetX, y: e.offsetY };
                 const rectangleObject = {left: Math.min(start.current.x, end.current.x), top: Math.min(start.current.y, end.current.y), 
                                         width: Math.abs(start.current.x - end.current.x), height: Math.abs(start.current.y - end.current.y)};
-                dispatch(addShape({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings}));
+                addShapeToSession({type: 'rectangle', details: rectangleObject, canvasSettings: canvasSettings});
                 started.current = true;
             };
         

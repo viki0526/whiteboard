@@ -157,6 +157,7 @@
 }
 
 .model-select.container .dropdown-toggle{
+    position: relative;
     background-color: white;
     border-color: black;
     color: black;

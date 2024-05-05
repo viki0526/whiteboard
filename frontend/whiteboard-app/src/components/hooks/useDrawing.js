@@ -1,6 +1,5 @@
 /**
  * Redraws all the shapes in the store when the store changes
- * Saves to localStorage to persist state on refresh
  * Draws autcomplete suggestions
  */
 
@@ -8,12 +7,14 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { restoreShapes, redraw, addShape } from '../../store/shapeSlice';
+import { getDatabase, ref, onValue, set, push } from "firebase/database";
+import useWhiteboardSession from './useWhiteboardSession';
 
-const useDrawing = (ctx, model) => {
-    const shapes = useSelector((state) => state.value);
-    const dispatch = useDispatch();
+
+const useDrawing = (ctx, model, sessionId) => {
+    const {getShapes, addShapeToSession, redrawSessionShapes} = useWhiteboardSession(sessionId);
+    const shapes = getShapes();
 
     const [modelChosen, setModelChosen] = useState(true);
     const autocompleteSettings = useRef({color: '#000000', opacity: 1, strokeWidth: 2.5});
@@ -32,28 +33,21 @@ const useDrawing = (ctx, model) => {
         })
     }, [model]);
 
-
     useEffect(() => {
-        if (ctx) {
-            loadFromLocalStorage();
-        }
-    }, [ctx]);
-
-    useEffect(() => {
-        if (ctx) {
+        if (ctx && shapes) {
             redrawAllShapes();
-            saveToLocalStorage();
         }
-    }, [shapes]);
+    }, [ctx, shapes]);
 
+    // Handles model generation and selection on keystroke
     useEffect(() => {
         const handleKeydown = (event) => {
             if (event.key === 'ArrowRight') {
-                dispatch(redraw());
+                redrawSessionShapes();
             }
             else if (event.key === 'Enter') {
                 const genStrokes = [{dx: startX.current, dy: startY.current, pen: 'down'}, ...generatedStrokes.current];
-                dispatch(addShape({type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true}));
+                addShapeToSession({type: 'draw', details: genStrokes, canvasSettings: autocompleteSettings.current, autocomplete: true});
             } else {
                 // do nothing
             }
@@ -64,19 +58,8 @@ const useDrawing = (ctx, model) => {
         };
     }, [ctx]);
 
-    const loadFromLocalStorage = () => {
-        const storedShapesJson = localStorage.getItem('shapes');
-        if (storedShapesJson) {
-            const storedShapes = JSON.parse(storedShapesJson);
-            dispatch(restoreShapes(storedShapes));
-        }
-    }
-
-    const saveToLocalStorage = () => {
-        localStorage.setItem('shapes', JSON.stringify(shapes));
-    }
-
     const redrawAllShapes = () => {
+        console.log(shapes);
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         for (var i = 0; i < shapes.length; i++) {
             drawShape(shapes[i], i === shapes.length - 1);

@@ -1,3 +1,31 @@
+nav.navbar {
+    z-index: 11;
+}
+
 .navbar .container {
     margin-left: 20px;
+}
+
+.navbar .profile-logo-button {
+    margin-right: 20px;
+    padding: 0px;
+    border-width: 0px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+button#dropdown-custom-components::after {
+    display: none;
+}
+
+button#dropdown-custom-components {
+    padding: 0px;
+    margin: 0px 20px;
+    border-radius: 50%;
+    border-width: 0px;
+}
+
+#dropdown-custom-menu {
+    right: 30px;
+    left: auto;
 }

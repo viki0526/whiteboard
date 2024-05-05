@@ -17,7 +17,8 @@ export const shapesSlice = createSlice({
             state.value = [...state.value, action.payload]
         },
         clearShapes: (state) => {
-            state.value = []
+            console.log('clearing');
+            state.value = [];
         },
         undo: (state) => {
             if (state.value.length === 0) {

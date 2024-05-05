@@ -7,18 +7,16 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import 'react-tippy/dist/tippy.css';
 import { Tooltip } from 'react-tippy';
 import { useSearchParams } from "react-router-dom";
-
-
 import {ReactComponent as SquareIcon} from '../assets/SquareIcon.svg';
 import {ReactComponent as DiamondIcon} from '../assets/DiamondIcon.svg';
 import {ReactComponent as EllipseIcon} from '../assets/EllipseIcon.svg';
 import {ReactComponent as LineIcon} from '../assets/LineIcon.svg';
 import {ReactComponent as DrawIcon} from '../assets/DrawIcon.svg';
 import {ReactComponent as ClearIcon} from '../assets/ClearIcon.svg';
-
 import { useDispatch } from 'react-redux';
 import { clearShapes } from '../store/shapeSlice';
-
+import { useSession } from '../contexts/SessionContext';
+import useWhiteboardSession from './hooks/useWhiteboardSession';
 
 export default function BoardContainer () {
     const colors = [{name: 'black', code: '#1e1e1e'}, {name: 'red', code: '#e03131'}, {name: 'green', code: '#2f9e44'}, {name: 'blue', code: '#1971c2'}, {name: 'orange', code: '#f08c00'}]
@@ -64,6 +62,19 @@ export default function BoardContainer () {
     const boardRef = useRef();
     const dispatch = useDispatch();
 
+    const { sessionId, setSessionId } = useSession();
+
+    const {clearShapesFromSession } = useWhiteboardSession(sessionId);
+
+    useEffect(() => {
+        const urlSessionId = searchParams.get('session-id');
+        if (urlSessionId) {
+            setSessionId(urlSessionId);
+        } else {
+            setSessionId('local-playground');
+        }
+    }, [setSessionId, searchParams]);
+
     useEffect(() => {        
         const colorObj = JSON.parse(localStorage.getItem('selectedColor'));
         const strokeWidthObj = JSON.parse(localStorage.getItem('strokeWidth'));
@@ -72,7 +83,7 @@ export default function BoardContainer () {
         loadFromLocalStorage(strokeWidthObj, handleStrokeWidthSelect);
         loadFromLocalStorage(mode, setSelectedCol);
         setModelFromURL();
-    }, [])
+    }, []);
 
     const loadFromLocalStorage = (val, handleSelect) => {
         if (val) {
@@ -127,15 +138,16 @@ export default function BoardContainer () {
 
     const handleModelSelect = (model) => {
         setSelectedModel(model);
-        setSearchParams({'model': model})
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('model', model);
+        setSearchParams(newSearchParams);
     }
 
     const clearAll = () => {
-        dispatch(clearShapes());
+        clearShapesFromSession();
     };
 
     return (
-        <>
             <div className='main-container'>
                 <div className='top-container'>
                     <Container className='toolbar'>
@@ -167,7 +179,6 @@ export default function BoardContainer () {
                                 {selectedModel === 'none' ? 'Choose a model' : selectedModel}
                             </Dropdown.Toggle>
                             <Dropdown.Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                {/* <Dropdown.Item eventKey= "none" onClick={() => handleModelSelect('Choose a model')}> Choose a model </Dropdown.Item> */}
                                 {
                                     models.map(model => (
                                         <Dropdown.Item eventKey={model} onClick={() => handleModelSelect(model)}> 
@@ -195,16 +206,6 @@ export default function BoardContainer () {
                             <div className='space-box' />
                             <input type='color' id='color-input' onChange={(e) => {handleColorSelect({name: 'custom', code: e.target.value})}} />
                         </div>
-
-                        {/* <div className='option-title'>
-                            Background color
-                        </div>
-                        <div className='options'>
-                            <div className='option-value'>
-                                
-                            </div>
-                        </div> */}
-
                         <div className='option-title'>
                             Stroke width
                         </div>
@@ -225,20 +226,10 @@ export default function BoardContainer () {
                                 </svg>
                             </div>
                         </div>
-
-                        {/* <div className='option-title' style={{paddingBottom: '0'}}>
-                            Opacity
-                        </div>
-                        <div className='options'>
-                            <div className='option-value opacity-slider'>
-                                <Form.Range min={0} max={1} value={opacity} step={0.01} onChange={(e) => {setOpacity(e.target.value)}}/>
-                            </div>
-                        </div> */}
-
                     </div>
-                    <Board ref={boardRef} color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} mode={toolbarElements[selectedCol].name} model={selectedModel}/>
+                    <Board ref={boardRef} color={selectedColor} strokeWidth={strokeWidth} opacity={opacity} 
+                            sessionId={sessionId} mode={toolbarElements[selectedCol].name} model={selectedModel}/>
                 </div>
             </div>
-        </>
     );
 }

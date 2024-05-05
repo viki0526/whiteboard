@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
+import useWhiteboardSession from '../hooks/useWhiteboardSession';
 
-import { useDispatch } from 'react-redux';
-import { addShape } from '../../store/shapeSlice';
-
-export default function Draw ({ ctx, mode, canvasSettings }) {
-    const dispatch = useDispatch();
+export default function Draw ({ ctx, mode, sessionId, canvasSettings }) {
+    const {addShapeToSession} = useWhiteboardSession(sessionId);
 
     useEffect(() => {
         if (ctx && mode === 'draw') {
@@ -47,7 +45,7 @@ export default function Draw ({ ctx, mode, canvasSettings }) {
                 let lastStroke = strokes.pop();
                 lastStroke.pen = 'end';
                 strokes.push(lastStroke);
-                dispatch(addShape({type: 'draw', details: strokes, canvasSettings: canvasSettings, autocomplete: false}));
+                addShapeToSession({type: 'draw', details: strokes, canvasSettings: canvasSettings, autocomplete: false});
                 strokes = [];
             };
 
